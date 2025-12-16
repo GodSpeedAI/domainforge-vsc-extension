@@ -7,6 +7,7 @@
  */
 
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as path from 'path';
 import {
 	LanguageClient,
@@ -52,7 +53,14 @@ function getBundledBinaryPath(context: vscode.ExtensionContext): string | null {
 		return null;
 	}
 
-	return path.join(context.extensionPath, 'bin', platformDir, binaryName);
+	const fullPath = path.join(context.extensionPath, 'bin', platformDir, binaryName);
+
+	if (!fs.existsSync(fullPath)) {
+		console.warn(`LSP binary not found at detected path: ${fullPath}`);
+		return null;
+	}
+
+	return fullPath;
 }
 
 /**
