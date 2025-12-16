@@ -1,2 +1,31 @@
-/node_modules
-.vscode
+# Dependencies
+node_modules/
+.pnpm-debug.log
+
+# Build output
+out/
+dist/
+
+# VS Code Extension packaging
+*.vsix
+
+# VS Code Test instances
+.vscode-test/
+
+# Binary downloads (LSP)
+bin/
+
+# Temporary files
+tmp/
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/settings.json

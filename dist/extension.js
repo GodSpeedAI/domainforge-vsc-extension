@@ -18016,16 +18016,36 @@ var vscode = __toESM(require("vscode"));
 var path = __toESM(require("path"));
 var import_node = __toESM(require_node3());
 var client;
-function getBinaryName() {
+function getBundledBinaryPath(context) {
   const platform = process.platform;
   const arch = process.arch;
-  if (platform === "win32") {
-    return "domainforge-lsp.exe";
+  let platformDir;
+  let binaryName;
+  if (platform === "win32" && arch === "x64") {
+    platformDir = "windows-x64";
+    binaryName = "domainforge-lsp.exe";
   } else if (platform === "darwin") {
-    return arch === "arm64" ? "domainforge-lsp-darwin-arm64" : "domainforge-lsp-darwin-x64";
+    binaryName = "domainforge-lsp";
+    if (arch === "x64") {
+      platformDir = "darwin-x64";
+    } else if (arch === "arm64") {
+      platformDir = "darwin-arm64";
+    } else {
+      return null;
+    }
+  } else if (platform === "linux") {
+    binaryName = "domainforge-lsp";
+    if (arch === "x64") {
+      platformDir = "linux-x64";
+    } else if (arch === "arm64") {
+      platformDir = "linux-arm64";
+    } else {
+      return null;
+    }
   } else {
-    return "domainforge-lsp";
+    return null;
   }
+  return path.join(context.extensionPath, "bin", platformDir, binaryName);
 }
 function getServerPath(context) {
   const config = vscode.workspace.getConfiguration("domainforge");
@@ -18033,11 +18053,16 @@ function getServerPath(context) {
   if (customPath && customPath.trim() !== "") {
     return customPath;
   }
-  const binaryName = getBinaryName();
-  return path.join(context.extensionPath, "bin", binaryName);
+  return getBundledBinaryPath(context);
 }
 function createLanguageClient(context) {
   const serverPath = getServerPath(context);
+  if (!serverPath) {
+    vscode.window.showErrorMessage(
+      `DomainForge Language Server binary not found for platform: ${process.platform} (${process.arch}). Please specify 'domainforge.server.path' in settings.`
+    );
+    return void 0;
+  }
   const serverOptions = {
     command: serverPath,
     transport: import_node.TransportKind.stdio,
@@ -18085,9 +18110,12 @@ async function startServer(context) {
     client = void 0;
   }
   try {
-    client = createLanguageClient(context);
-    await client.start();
-    console.log("DomainForge Language Server started successfully");
+    const newClient = createLanguageClient(context);
+    if (newClient) {
+      client = newClient;
+      await client.start();
+      console.log("DomainForge Language Server started successfully");
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     vscode.window.showErrorMessage(
