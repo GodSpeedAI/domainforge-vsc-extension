@@ -1,21 +1,97 @@
 {
   "name": "domainforge",
   "displayName": "DomainForge",
-  "description": "A high-performance SEA DSL linterer and   formrmatter   written in Rust.",
+  "description": "Language support for the DomainForge SEA DSL - syntax highlighting, linting, and formatting",
   "version": "0.0.1",
+  "publisher": "GodSpeedAI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GodSpeedAI/domainforge-vsc-extension"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.107.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "domainforge",
+    "sea",
+    "dsl",
+    "domain-modeling",
+    "entity"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "domainforge",
+        "aliases": [
+          "DomainForge",
+          "SEA DSL",
+          "domainforge"
+        ],
+        "extensions": [
+          ".sea"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "domainforge",
+        "scopeName": "source.sea",
+        "path": "./syntaxes/sea.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "DomainForge",
+      "properties": {
+        "domainforge.trace.server": {
+          "type": "string",
+          "scope": "window",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the DomainForge language server."
+        },
+        "domainforge.server.path": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "description": "Path to the DomainForge LSP server binary. Leave empty to use bundled binary."
+        },
+        "domainforge.formatting.indentStyle": {
+          "type": "string",
+          "scope": "resource",
+          "enum": [
+            "space",
+            "tab"
+          ],
+          "default": "space",
+          "description": "Indent style for formatting SEA files."
+        },
+        "domainforge.formatting.indentWidth": {
+          "type": "number",
+          "scope": "resource",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Number of spaces per indent level when using space indentation."
+        }
+      }
+    },
     "commands": [
       {
-        "command": "domainforge.helloWorld",
-        "title": "Hello World"
+        "command": "domainforge.restartServer",
+        "title": "DomainForge: Restart Language Server"
       }
     ]
   },
@@ -33,6 +109,9 @@
     "lint": "eslint src",
     "test": "vscode-test"
   },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
   "devDependencies": {
     "@types/vscode": "^1.107.0",
     "@types/mocha": "^10.0.10",
@@ -46,3 +125,4 @@
     "@vscode/test-electron": "^2.5.2"
   }
 }
+

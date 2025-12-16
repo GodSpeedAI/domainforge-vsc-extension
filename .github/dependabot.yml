@@ -1,0 +1,46 @@
+version: 2
+
+updates:
+  # npm dependencies
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Group devDependencies to reduce PR noise
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "typescript*"
+          - "eslint*"
+          - "esbuild"
+          - "@vscode/test-*"
+        update-types:
+          - minor
+          - patch
+      # Group minor/patch for prod dependencies
+      prod-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: "deps(npm)"
+    labels:
+      - dependencies
+      - npm
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+    labels:
+      - dependencies
+      - github-actions

@@ -1,0 +1,106 @@
+name: Release
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false  # Don't cancel in-progress releases
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: 9
+
+jobs:
+  package:
+    name: Package VSIX
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install vsce
+        run: pnpm add -D @vscode/vsce
+
+      # Download LSP binaries from the corresponding LSP release
+      - name: Download LSP binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          VERSION=${GITHUB_REF_NAME#v}
+          
+          # Create bin directory for server binaries
+          mkdir -p bin/linux-x64 bin/linux-arm64 bin/windows-x64 bin/darwin-x64 bin/darwin-arm64
+          
+          echo "Downloading LSP binaries for version v${VERSION}..."
+          
+          # Download all platform binaries
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
+            --pattern "domainforge-lsp-linux-x64/*" --dir bin/linux-x64 || echo "::warning::Linux x64 binary not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
+            --pattern "domainforge-lsp-linux-arm64/*" --dir bin/linux-arm64 || echo "::warning::Linux ARM64 binary not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
+            --pattern "domainforge-lsp-windows-x64/*" --dir bin/windows-x64 || echo "::warning::Windows binary not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
+            --pattern "domainforge-lsp-darwin-x64/*" --dir bin/darwin-x64 || echo "::warning::macOS x64 binary not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
+            --pattern "domainforge-lsp-darwin-arm64/*" --dir bin/darwin-arm64 || echo "::warning::macOS ARM binary not found"
+          
+          echo "Downloaded binaries:"
+          find bin -type f | head -20
+
+      - name: Package extension
+        run: pnpm run package && npx vsce package
+
+      - name: Check VSIX size
+        run: |
+          VSIX=$(ls *.vsix | head -1)
+          SIZE=$(stat -c%s "$VSIX")
+          echo "VSIX size: $SIZE bytes ($(numfmt --to=iec $SIZE))"
+          # Warn if VSIX exceeds 50MB (with binaries)
+          if [ "$SIZE" -gt 52428800 ]; then
+            echo "::warning::VSIX size ($SIZE bytes) is large"
+          fi
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: domainforge-vsix
+          path: '*.vsix'
+
+  release:
+    name: Create Release
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: domainforge-vsix
+          path: ./
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: '*.vsix'
+          generate_release_notes: true
