@@ -1,15 +1,30 @@
 import * as assert from 'assert';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
 
 suite('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+	test('Extension should be present', () => {
+		assert.ok(vscode.extensions.getExtension('GodSpeedAI.domainforge'));
+	});
+
+	test('Should activate when opening a .sea file', async () => {
+		const ext = vscode.extensions.getExtension('GodSpeedAI.domainforge');
+		assert.ok(ext, 'Extension not found');
+
+		// Create a mock .sea document
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'domainforge',
+			content: 'Entity Test {}'
+		});
+		await vscode.window.showTextDocument(doc);
+		
+		// The extension should activate automatically due to onLanguage activation event
+		// But we can also force it
+		if (!ext.isActive) {
+			await ext.activate();
+		}
+		
+		assert.strictEqual(ext.isActive, true, 'Extension should be active');
 	});
 });

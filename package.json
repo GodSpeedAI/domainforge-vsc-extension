@@ -24,7 +24,9 @@
     "domain-modeling",
     "entity"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:domainforge"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "languages": [
