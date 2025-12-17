@@ -7,6 +7,7 @@
  */
 
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as path from 'path';
 import {
 	LanguageClient,
@@ -18,28 +19,55 @@ import {
 let client: LanguageClient | undefined;
 
 /**
- * Detect the current platform and return the appropriate binary name.
+ * Detect the current platform and return the appropriate binary path relative to the extension folder.
  */
-function getBinaryName(): string {
+function getBundledBinaryPath(context: vscode.ExtensionContext): string | null {
 	const platform = process.platform;
 	const arch = process.arch;
 
-	if (platform === 'win32') {
-		return 'domainforge-lsp.exe';
+	let platformDir: string;
+	let binaryName: string;
+
+	if (platform === 'win32' && arch === 'x64') {
+		platformDir = 'windows-x64';
+		binaryName = 'domainforge-lsp.exe';
 	} else if (platform === 'darwin') {
-		// macOS - check for ARM64 vs x64
-		return arch === 'arm64' ? 'domainforge-lsp-darwin-arm64' : 'domainforge-lsp-darwin-x64';
+		binaryName = 'domainforge-lsp';
+		if (arch === 'x64') {
+			platformDir = 'darwin-x64';
+		} else if (arch === 'arm64') {
+			platformDir = 'darwin-arm64';
+		} else {
+			return null;
+		}
+	} else if (platform === 'linux') {
+		binaryName = 'domainforge-lsp';
+		if (arch === 'x64') {
+			platformDir = 'linux-x64';
+		} else if (arch === 'arm64') {
+			platformDir = 'linux-arm64';
+		} else {
+			return null;
+		}
 	} else {
-		// Linux
-		return 'domainforge-lsp';
+		return null;
 	}
+
+	const fullPath = path.join(context.extensionPath, 'bin', platformDir, binaryName);
+
+	if (!fs.existsSync(fullPath)) {
+		console.warn(`LSP binary not found at detected path: ${fullPath}`);
+		return null;
+	}
+
+	return fullPath;
 }
 
 /**
  * Get the path to the LSP server binary.
  * Checks user configuration first, then falls back to bundled binary.
  */
-function getServerPath(context: vscode.ExtensionContext): string {
+function getServerPath(context: vscode.ExtensionContext): string | null {
 	// Check if user has specified a custom server path
 	const config = vscode.workspace.getConfiguration('domainforge');
 	const customPath = config.get<string>('server.path');
@@ -49,15 +77,21 @@ function getServerPath(context: vscode.ExtensionContext): string {
 	}
 
 	// Use bundled binary
-	const binaryName = getBinaryName();
-	return path.join(context.extensionPath, 'bin', binaryName);
+	return getBundledBinaryPath(context);
 }
 
 /**
  * Create the Language Client with proper configuration.
  */
-function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
+function createLanguageClient(context: vscode.ExtensionContext): LanguageClient | undefined {
 	const serverPath = getServerPath(context);
+
+	if (!serverPath) {
+		vscode.window.showErrorMessage(
+			`DomainForge Language Server binary not found for platform: ${process.platform} (${process.arch}). Please specify 'domainforge.server.path' in settings.`
+		);
+		return undefined;
+	}
 
 	// Server options - run the LSP binary with stdio transport
 	const serverOptions: ServerOptions = {
@@ -121,9 +155,12 @@ async function startServer(context: vscode.ExtensionContext): Promise<void> {
 	}
 
 	try {
-		client = createLanguageClient(context);
-		await client.start();
-		console.log('DomainForge Language Server started successfully');
+		const newClient = createLanguageClient(context);
+		if (newClient) {
+			client = newClient;
+			await client.start();
+			console.log('DomainForge Language Server started successfully');
+		}
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		vscode.window.showErrorMessage(

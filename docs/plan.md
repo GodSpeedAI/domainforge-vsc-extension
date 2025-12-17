@@ -1,0 +1,1 @@
+This repository follows the phased implementation plan maintained in `domainforge-lsp/docs/plan.md` (in the separate `domainforge-lsp` repo), since the VS Code extension is primarily a thin language client for the `domainforge-lsp` server.
