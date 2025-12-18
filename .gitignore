@@ -28,7 +28,8 @@ tmp/
 Thumbs.db
 
 # Editors
-.vscode/
+!.vscode/
+.vscode/*
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/launch.json

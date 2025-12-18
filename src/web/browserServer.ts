@@ -35,25 +35,25 @@ const documents = new TextDocuments(TextDocument);
 // Track WASM initialization state
 let wasmInitialized = false;
 
-connection.onInitialize(async (_params: InitializeParams): Promise<InitializeResult> => {
-    console.log('[DomainForge Browser Server] Initializing...');
+	connection.onInitialize(async (_params: InitializeParams): Promise<InitializeResult> => {
+		console.log('[DomainForge Browser Server] Initializing...');
 
-    try {
-        // Initialize WASM module
-        await init();
-        wasmInitialized = true;
-        console.log('[DomainForge Browser Server] WASM initialized successfully');
-    } catch (error) {
-        console.error('[DomainForge Browser Server] Failed to initialize WASM:', error);
-    }
+		try {
+			// Initialize WASM module
+			await init();
+			wasmInitialized = true;
+			console.log('[DomainForge Browser Server] WASM initialized successfully');
+		} catch (error) {
+			console.error('[DomainForge Browser Server] Failed to initialize WASM:', error);
+		}
 
-    return {
-        capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Full,
-            documentFormattingProvider: true,
-        },
-    };
-});
+		return {
+			capabilities: {
+				textDocumentSync: TextDocumentSyncKind.Full,
+				documentFormattingProvider: wasmInitialized,
+			},
+		};
+	});
 
 connection.onInitialized(() => {
     console.log('[DomainForge Browser Server] Server initialized');

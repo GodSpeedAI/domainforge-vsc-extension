@@ -325,7 +325,7 @@ export class McpServerManager {
 				this.process = undefined;
 			});
 
-			this.outputChannel.appendLine('MCP server started successfully');
+			this.outputChannel.appendLine('MCP server process spawned');
 			return true;
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
@@ -429,10 +429,12 @@ export class McpServerManager {
 	/**
 	 * Dispose of the MCP server manager.
 	 */
-	public dispose(): void {
-		this.stop().catch(err => {
+	public async dispose(): Promise<void> {
+		try {
+			await this.stop();
+		} catch (err) {
 			console.error('Error stopping MCP server during dispose:', err);
-		});
+		}
 		this.outputChannel.dispose();
 	}
 }

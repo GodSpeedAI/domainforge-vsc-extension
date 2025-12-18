@@ -52,14 +52,10 @@ suite('MCP Server Test Suite', () => {
 		assert.strictEqual(config.get('enable'), false, 'MCP should be disabled by default');
 
 		// The command should exist and be executable (it will show a warning)
-		// We can't easily test the warning message, but we verify the command doesn't throw
-		try {
-			await vscode.commands.executeCommand('domainforge.restartMcpServer');
-			// Command executed without throwing - this is expected
-			assert.ok(true, 'Command executed without throwing');
-		} catch (error) {
-			// If it throws, that's also acceptable behavior for disabled state
-			assert.ok(true, 'Command threw an error for disabled state');
-		}
+		// We verify the command doesn't throw
+		await assert.doesNotReject(
+			async () => await vscode.commands.executeCommand('domainforge.restartMcpServer'),
+			'Restart MCP command should not throw when MCP is disabled'
+		);
 	});
 });

@@ -28,8 +28,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         'domainforge.restartServer',
         async () => {
             vscode.window.showInformationMessage('Restarting DomainForge Language Server...');
-            await startClient(context);
-            vscode.window.showInformationMessage('DomainForge Language Server restarted');
+            try {
+                await startClient(context);
+                vscode.window.showInformationMessage('DomainForge Language Server restarted');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                vscode.window.showErrorMessage(`Failed to restart DomainForge Language Server: ${message}`);
+            }
         }
     );
     context.subscriptions.push(restartCommand);

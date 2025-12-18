@@ -190,14 +190,7 @@ async function startMcpServerIfEnabled(context: vscode.ExtensionContext): Promis
 	}
 }
 
-/**
- * Stop the MCP server if running.
- */
-async function stopMcpServer(): Promise<void> {
-	if (mcpServerManager && mcpServerManager.isRunning()) {
-		await mcpServerManager.stop();
-	}
-}
+
 
 /**
  * Activate the extension.

@@ -18252,7 +18252,7 @@ var McpServerManager = class {
         vscode.window.showErrorMessage(`DomainForge MCP Server error: ${error.message}`);
         this.process = void 0;
       });
-      this.outputChannel.appendLine("MCP server started successfully");
+      this.outputChannel.appendLine("MCP server process spawned");
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -18334,10 +18334,12 @@ var McpServerManager = class {
   /**
    * Dispose of the MCP server manager.
    */
-  dispose() {
-    this.stop().catch((err) => {
+  async dispose() {
+    try {
+      await this.stop();
+    } catch (err) {
       console.error("Error stopping MCP server during dispose:", err);
-    });
+    }
     this.outputChannel.dispose();
   }
 };
