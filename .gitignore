@@ -11,9 +11,13 @@ dist/
 
 # VS Code Test instances
 .vscode-test/
+.vscode-test-web/
 
 # Binary downloads (LSP)
 bin/
+
+# WASM source files (bundled in dist/web during build)
+wasm/
 
 # Temporary files
 tmp/

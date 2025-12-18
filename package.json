@@ -24,10 +24,11 @@
     "domain-modeling",
     "entity"
   ],
-  "activationEvents": [
-    "onLanguage:domainforge"
-  ],
   "main": "./dist/extension.js",
+  "browser": "./dist/web/extensionWeb.js",
+  "extensionKind": [
+    "workspace"
+  ],
   "contributes": {
     "languages": [
       {
@@ -100,6 +101,7 @@
   "scripts": {
     "vscode:prepublish": "pnpm run package",
     "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "compile-web": "node esbuild.js --web",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
@@ -107,24 +109,28 @@
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "check-types": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
+    "lint": "eslint src --ignore-pattern 'src/web/**'",
+    "test": "vscode-test",
+    "test-web": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=.",
+    "copy-wasm": "cp ../domainforge/pkg/sea_core.js ../domainforge/pkg/sea_core.d.ts ../domainforge/pkg/sea_core_bg.wasm wasm/"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
   },
   "devDependencies": {
-    "@types/vscode": "^1.107.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.48.1",
-    "eslint": "^9.39.1",
+    "@types/vscode": "^1.107.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-web": "^0.0.77",
     "esbuild": "^0.27.1",
+    "eslint": "^9.39.1",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.48.1"
   }
 }
-

@@ -17491,7 +17491,7 @@ var require_main4 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.SettingMonitor = exports2.LanguageClient = exports2.TransportKind = void 0;
     var cp = require("child_process");
-    var fs = require("fs");
+    var fs2 = require("fs");
     var path2 = require("path");
     var vscode_1 = require("vscode");
     var Is = require_is();
@@ -17916,13 +17916,13 @@ var require_main4 = __commonJS({
         const mainRootPath = this._mainGetRootPath();
         if (mainRootPath !== void 0) {
           const result = path2.join(mainRootPath, runtime);
-          if (fs.existsSync(result)) {
+          if (fs2.existsSync(result)) {
             return result;
           }
         }
         if (serverWorkingDirectory !== void 0) {
           const result = path2.join(serverWorkingDirectory, runtime);
-          if (fs.existsSync(result)) {
+          if (fs2.existsSync(result)) {
             return result;
           }
         }
@@ -17946,7 +17946,7 @@ var require_main4 = __commonJS({
         }
         if (cwd) {
           return new Promise((s) => {
-            fs.lstat(cwd, (err, stats) => {
+            fs2.lstat(cwd, (err, stats) => {
               s(!err && stats.isDirectory() ? cwd : void 0);
             });
           });
@@ -18013,6 +18013,7 @@ __export(extension_exports, {
 });
 module.exports = __toCommonJS(extension_exports);
 var vscode = __toESM(require("vscode"));
+var fs = __toESM(require("fs"));
 var path = __toESM(require("path"));
 var import_node = __toESM(require_node3());
 var client;
@@ -18045,7 +18046,12 @@ function getBundledBinaryPath(context) {
   } else {
     return null;
   }
-  return path.join(context.extensionPath, "bin", platformDir, binaryName);
+  const fullPath = path.join(context.extensionPath, "bin", platformDir, binaryName);
+  if (!fs.existsSync(fullPath)) {
+    console.warn(`LSP binary not found at detected path: ${fullPath}`);
+    return null;
+  }
+  return fullPath;
 }
 function getServerPath(context) {
   const config = vscode.workspace.getConfiguration("domainforge");

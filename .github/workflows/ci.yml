@@ -14,9 +14,9 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
   PNPM_VERSION: 9
-  CACHE_VERSION: v1  # Increment to bust cache
+  CACHE_VERSION: v1 # Increment to bust cache
 
 jobs:
   lint:
@@ -100,12 +100,52 @@ jobs:
           BUNDLE="dist/extension.js"
           if [ -f "$BUNDLE" ]; then
             SIZE=$(stat -c%s "$BUNDLE")
-            echo "Bundle size: $SIZE bytes ($(numfmt --to=iec $SIZE))"
-            # Warn if bundle exceeds 500KB
-            if [ "$SIZE" -gt 512000 ]; then
-              echo "::warning::Bundle size ($SIZE bytes) is large, consider optimization"
+            echo "Desktop bundle size: $SIZE bytes ($(numfmt --to=iec $SIZE))"
+            # Warn if bundle exceeds 1MB
+            if [ "$SIZE" -gt 1048576 ]; then
+              echo "::warning::Desktop bundle size ($SIZE bytes) is large, consider optimization"
             fi
           fi
+
+      - name: Check web bundle size
+        run: |
+          WEB_BUNDLE="dist/web/extensionWeb.js"
+          WASM_FILE="dist/web/sea_core_bg.wasm"
+          if [ -f "$WEB_BUNDLE" ]; then
+            SIZE=$(stat -c%s "$WEB_BUNDLE")
+            echo "Web extension bundle size: $SIZE bytes ($(numfmt --to=iec $SIZE))"
+          fi
+          if [ -f "$WASM_FILE" ]; then
+            SIZE=$(stat -c%s "$WASM_FILE")
+            echo "WASM binary size: $SIZE bytes ($(numfmt --to=iec $SIZE))"
+            # Warn if WASM exceeds 2MB
+            if [ "$SIZE" -gt 2097152 ]; then
+              echo "::warning::WASM binary size ($SIZE bytes) is large"
+            fi
+          fi
+
+      - name: Validate web extension
+        run: |
+          # Check that web entry point exists
+          if [ ! -f "dist/web/extensionWeb.js" ]; then
+            echo "::error::Web extension entry point missing"
+            exit 1
+          fi
+          # Check that browser server exists
+          if [ ! -f "dist/web/browserServer.js" ]; then
+            echo "::error::Browser server missing"
+            exit 1
+          fi
+          # Check that WASM files are bundled
+          if [ ! -f "dist/web/sea_core_bg.wasm" ]; then
+            echo "::error::WASM binary missing from web bundle"
+            exit 1
+          fi
+          if [ ! -f "dist/web/sea_core.js" ]; then
+            echo "::error::WASM bindings missing from web bundle"
+            exit 1
+          fi
+          echo "✅ Web extension files validated"
 
   test:
     name: Test
@@ -144,7 +184,7 @@ jobs:
       - name: Run tests
         run: xvfb-run -a pnpm test
         env:
-          DISPLAY: ':99.0'
+          DISPLAY: ":99.0"
 
   security:
     name: Security Audit
@@ -168,4 +208,4 @@ jobs:
 
       - name: Run npm audit
         run: pnpm audit --audit-level=high
-        continue-on-error: true  # Advisory, not blocking
+        continue-on-error: true # Advisory, not blocking
