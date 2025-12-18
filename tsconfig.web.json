@@ -14,7 +14,6 @@
 		"noEmit": true
 	},
 	"include": [
-		"src/web/**/*",
-		"src/web/wasm-types/**/*"
-	]
+		"src/web/**/*"
+	],
 }
