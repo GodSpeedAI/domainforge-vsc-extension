@@ -30,6 +30,30 @@ Language support for the **DomainForge SEA DSL** - syntax highlighting, diagnost
 | `domainforge.formatting.indentStyle` | `space` \| `tab`                 | `space` | Indent style for formatting                         |
 | `domainforge.formatting.indentWidth` | `number`                         | `4`     | Spaces per indent level (1-8)                       |
 
+### MCP (Model Context Protocol) Settings
+
+The MCP server enables AI agents (like VS Code Copilot, Claude, etc.) to query DomainForge language features in a controlled, secure manner.
+
+| Setting                                    | Type      | Default | Description                                         |
+| ------------------------------------------ | --------- | ------- | --------------------------------------------------- |
+| `domainforge.mcp.enable`                   | `boolean` | `false` | Enable MCP server for AI agent integration          |
+| `domainforge.mcp.serverPath`               | `string`  | `""`    | Custom path to MCP binary (leave empty for bundled) |
+| `domainforge.mcp.rateLimits.diagnostics`   | `number`  | `10`    | Max requests/second for diagnostics tool            |
+| `domainforge.mcp.rateLimits.hover`         | `number`  | `20`    | Max requests/second for hover tool                  |
+| `domainforge.mcp.rateLimits.definition`    | `number`  | `10`    | Max requests/second for definition tool             |
+| `domainforge.mcp.rateLimits.references`    | `number`  | `5`     | Max requests/second for references tool             |
+| `domainforge.mcp.rateLimits.renamePreview` | `number`  | `2`     | Max requests/second for rename preview tool         |
+| `domainforge.mcp.rateLimits.codeActions`   | `number`  | `5`     | Max requests/second for code actions tool           |
+| `domainforge.mcp.auditLog.path`            | `string`  | `""`    | Path to MCP audit log file (empty = disabled)       |
+
+## Commands
+
+| Command                                | Description                         |
+| -------------------------------------- | ----------------------------------- |
+| `DomainForge: Restart Language Server` | Restart the LSP server              |
+| `DomainForge: Restart MCP Server`      | Restart the MCP server (if enabled) |
+| `DomainForge: Show MCP Server Logs`    | Show MCP server output channel      |
+
 ## Web Extension Support
 
 This extension works in browser-based VS Code environments:
@@ -51,12 +75,6 @@ This extension works in browser-based VS Code environments:
 | Code Actions        | ✅      | ❌              |
 
 > **Note**: Web version uses sea-core WASM for core functionality. Advanced features require the native LSP server.
-
-## Commands
-
-| Command                                | Description            |
-| -------------------------------------- | ---------------------- |
-| `DomainForge: Restart Language Server` | Restart the LSP server |
 
 ## Usage
 

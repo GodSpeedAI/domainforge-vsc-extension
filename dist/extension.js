@@ -3098,7 +3098,7 @@ var require_main = __commonJS({
     exports2.createMessageConnection = exports2.createServerSocketTransport = exports2.createClientSocketTransport = exports2.createServerPipeTransport = exports2.createClientPipeTransport = exports2.generateRandomPipeName = exports2.StreamMessageWriter = exports2.StreamMessageReader = exports2.SocketMessageWriter = exports2.SocketMessageReader = exports2.PortMessageWriter = exports2.PortMessageReader = exports2.IPCMessageWriter = exports2.IPCMessageReader = void 0;
     var ril_1 = require_ril();
     ril_1.default.install();
-    var path2 = require("path");
+    var path3 = require("path");
     var os = require("os");
     var crypto_1 = require("crypto");
     var net_1 = require("net");
@@ -3234,9 +3234,9 @@ var require_main = __commonJS({
       }
       let result;
       if (XDG_RUNTIME_DIR) {
-        result = path2.join(XDG_RUNTIME_DIR, `vscode-ipc-${randomSuffix}.sock`);
+        result = path3.join(XDG_RUNTIME_DIR, `vscode-ipc-${randomSuffix}.sock`);
       } else {
-        result = path2.join(os.tmpdir(), `vscode-${randomSuffix}.sock`);
+        result = path3.join(os.tmpdir(), `vscode-${randomSuffix}.sock`);
       }
       const limit = safeIpcPathLengths.get(process.platform);
       if (limit !== void 0 && result.length > limit) {
@@ -6682,8 +6682,8 @@ var require_protocolCodeAction = __commonJS({
   "node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/lib/common/protocolCodeAction.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    var vscode2 = require("vscode");
-    var ProtocolCodeAction = class extends vscode2.CodeAction {
+    var vscode3 = require("vscode");
+    var ProtocolCodeAction = class extends vscode3.CodeAction {
       constructor(title, data) {
         super(title);
         this.data = data;
@@ -6699,7 +6699,7 @@ var require_protocolDiagnostic = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.ProtocolDiagnostic = exports2.DiagnosticCode = void 0;
-    var vscode2 = require("vscode");
+    var vscode3 = require("vscode");
     var Is = require_is();
     var DiagnosticCode;
     (function(DiagnosticCode2) {
@@ -6709,7 +6709,7 @@ var require_protocolDiagnostic = __commonJS({
       }
       DiagnosticCode2.is = is;
     })(DiagnosticCode || (exports2.DiagnosticCode = DiagnosticCode = {}));
-    var ProtocolDiagnostic = class extends vscode2.Diagnostic {
+    var ProtocolDiagnostic = class extends vscode3.Diagnostic {
       constructor(range, message, severity, data) {
         super(range, message, severity);
         this.data = data;
@@ -9417,8 +9417,8 @@ var require_minimatch = __commonJS({
       return new Minimatch(pattern, options).match(p);
     };
     module2.exports = minimatch;
-    var path2 = require_path();
-    minimatch.sep = path2.sep;
+    var path3 = require_path();
+    minimatch.sep = path3.sep;
     var GLOBSTAR = /* @__PURE__ */ Symbol("globstar **");
     minimatch.GLOBSTAR = GLOBSTAR;
     var expand = require_brace_expansion();
@@ -9927,8 +9927,8 @@ var require_minimatch = __commonJS({
         if (this.empty) return f === "";
         if (f === "/" && partial) return true;
         const options = this.options;
-        if (path2.sep !== "/") {
-          f = f.split(path2.sep).join("/");
+        if (path3.sep !== "/") {
+          f = f.split(path3.sep).join("/");
         }
         f = f.split(slashSplit);
         this.debug(this.pattern, "split", f);
@@ -10713,7 +10713,7 @@ var require_notebook = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NotebookDocumentSyncFeature = void 0;
-    var vscode2 = require("vscode");
+    var vscode3 = require("vscode");
     var minimatch = require_minimatch();
     var proto = require_main3();
     var UUID = require_uuid();
@@ -10768,9 +10768,9 @@ var require_notebook = __commonJS({
         c2p2.asNotebookCell = asNotebookCell;
         function asNotebookCellKind(kind) {
           switch (kind) {
-            case vscode2.NotebookCellKind.Markup:
+            case vscode3.NotebookCellKind.Markup:
               return proto.NotebookCellKind.Markup;
-            case vscode2.NotebookCellKind.Code:
+            case vscode3.NotebookCellKind.Code:
               return proto.NotebookCellKind.Code;
           }
         }
@@ -11021,25 +11021,25 @@ var require_notebook = __commonJS({
         this.notebookDidOpen = /* @__PURE__ */ new Set();
         this.disposables = [];
         this.selector = client2.protocol2CodeConverter.asDocumentSelector($NotebookDocumentSyncOptions.asDocumentSelector(options));
-        vscode2.workspace.onDidOpenNotebookDocument((notebookDocument) => {
+        vscode3.workspace.onDidOpenNotebookDocument((notebookDocument) => {
           this.notebookDidOpen.add(notebookDocument.uri.toString());
           this.didOpen(notebookDocument);
         }, void 0, this.disposables);
-        for (const notebookDocument of vscode2.workspace.notebookDocuments) {
+        for (const notebookDocument of vscode3.workspace.notebookDocuments) {
           this.notebookDidOpen.add(notebookDocument.uri.toString());
           this.didOpen(notebookDocument);
         }
-        vscode2.workspace.onDidChangeNotebookDocument((event) => this.didChangeNotebookDocument(event), void 0, this.disposables);
+        vscode3.workspace.onDidChangeNotebookDocument((event) => this.didChangeNotebookDocument(event), void 0, this.disposables);
         if (this.options.save === true) {
-          vscode2.workspace.onDidSaveNotebookDocument((notebookDocument) => this.didSave(notebookDocument), void 0, this.disposables);
+          vscode3.workspace.onDidSaveNotebookDocument((notebookDocument) => this.didSave(notebookDocument), void 0, this.disposables);
         }
-        vscode2.workspace.onDidCloseNotebookDocument((notebookDocument) => {
+        vscode3.workspace.onDidCloseNotebookDocument((notebookDocument) => {
           this.didClose(notebookDocument);
           this.notebookDidOpen.delete(notebookDocument.uri.toString());
         }, void 0, this.disposables);
       }
       getState() {
-        for (const notebook of vscode2.workspace.notebookDocuments) {
+        for (const notebook of vscode3.workspace.notebookDocuments) {
           const matchingCells = this.getMatchingCells(notebook);
           if (matchingCells !== void 0) {
             return { kind: "document", id: "$internal", registrations: true, matches: true };
@@ -11051,10 +11051,10 @@ var require_notebook = __commonJS({
         return "notebook";
       }
       handles(textDocument) {
-        return vscode2.languages.match(this.selector, textDocument) > 0;
+        return vscode3.languages.match(this.selector, textDocument) > 0;
       }
       didOpenNotebookCellTextDocument(notebookDocument, cell) {
-        if (vscode2.languages.match(this.selector, cell.document) === 0) {
+        if (vscode3.languages.match(this.selector, cell.document) === 0) {
           return;
         }
         if (!this.notebookDidOpen.has(notebookDocument.uri.toString())) {
@@ -11085,7 +11085,7 @@ var require_notebook = __commonJS({
         }
       }
       didChangeNotebookCellTextDocument(notebookDocument, event) {
-        if (vscode2.languages.match(this.selector, event.document) === 0) {
+        if (vscode3.languages.match(this.selector, event.document) === 0) {
           return;
         }
         this.doSendChange({
@@ -11358,7 +11358,7 @@ var require_notebook = __commonJS({
         this.client = client2;
         this.registrations = /* @__PURE__ */ new Map();
         this.registrationType = proto.NotebookDocumentSyncRegistrationType.type;
-        vscode2.workspace.onDidOpenTextDocument((textDocument) => {
+        vscode3.workspace.onDidOpenTextDocument((textDocument) => {
           if (textDocument.uri.scheme !== _NotebookDocumentSyncFeature.CellScheme) {
             return;
           }
@@ -11372,7 +11372,7 @@ var require_notebook = __commonJS({
             }
           }
         });
-        vscode2.workspace.onDidChangeTextDocument((event) => {
+        vscode3.workspace.onDidChangeTextDocument((event) => {
           if (event.contentChanges.length === 0) {
             return;
           }
@@ -11390,7 +11390,7 @@ var require_notebook = __commonJS({
             }
           }
         });
-        vscode2.workspace.onDidCloseTextDocument((textDocument) => {
+        vscode3.workspace.onDidCloseTextDocument((textDocument) => {
           if (textDocument.uri.scheme !== _NotebookDocumentSyncFeature.CellScheme) {
             return;
           }
@@ -11455,7 +11455,7 @@ var require_notebook = __commonJS({
         if (textDocument.uri.scheme !== _NotebookDocumentSyncFeature.CellScheme) {
           return false;
         }
-        if (this.dedicatedChannel !== void 0 && vscode2.languages.match(this.dedicatedChannel, textDocument) > 0) {
+        if (this.dedicatedChannel !== void 0 && vscode3.languages.match(this.dedicatedChannel, textDocument) > 0) {
           return true;
         }
         for (const provider of this.registrations.values()) {
@@ -11475,7 +11475,7 @@ var require_notebook = __commonJS({
       }
       findNotebookDocumentAndCell(textDocument) {
         const uri = textDocument.uri.toString();
-        for (const notebookDocument of vscode2.workspace.notebookDocuments) {
+        for (const notebookDocument of vscode3.workspace.notebookDocuments) {
           for (const cell of notebookDocument.getCells()) {
             if (cell.document.uri.toString() === uri) {
               return [notebookDocument, cell];
@@ -11653,13 +11653,13 @@ var require_configuration = __commonJS({
         });
       }
       extractSettingsInformation(keys) {
-        function ensurePath(config, path2) {
+        function ensurePath(config, path3) {
           let current = config;
-          for (let i = 0; i < path2.length - 1; i++) {
-            let obj = current[path2[i]];
+          for (let i = 0; i < path3.length - 1; i++) {
+            let obj = current[path3[i]];
             if (!obj) {
               obj = /* @__PURE__ */ Object.create(null);
-              current[path2[i]] = obj;
+              current[path3[i]] = obj;
             }
             current = obj;
           }
@@ -11677,8 +11677,8 @@ var require_configuration = __commonJS({
             config = vscode_1.workspace.getConfiguration(void 0, resource).get(key);
           }
           if (config) {
-            let path2 = keys[i].split(".");
-            ensurePath(result, path2)[path2[path2.length - 1]] = toJSONObject(config);
+            let path3 = keys[i].split(".");
+            ensurePath(result, path3)[path3[path3.length - 1]] = toJSONObject(config);
           }
         }
         return result;
@@ -13991,7 +13991,7 @@ var require_semanticTokens = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.SemanticTokensFeature = void 0;
-    var vscode2 = require("vscode");
+    var vscode3 = require("vscode");
     var vscode_languageserver_protocol_1 = require_main3();
     var features_1 = require_features();
     var Is = require_is();
@@ -14069,7 +14069,7 @@ var require_semanticTokens = __commonJS({
         const selector = options.documentSelector;
         const fullProvider = Is.boolean(options.full) ? options.full : options.full !== void 0;
         const hasEditProvider = options.full !== void 0 && typeof options.full !== "boolean" && options.full.delta === true;
-        const eventEmitter = new vscode2.EventEmitter();
+        const eventEmitter = new vscode3.EventEmitter();
         const documentProvider = fullProvider ? {
           onDidChangeSemanticTokens: eventEmitter.event,
           provideDocumentSemanticTokens: (document, token) => {
@@ -14141,12 +14141,12 @@ var require_semanticTokens = __commonJS({
         const legend = client2.protocol2CodeConverter.asSemanticTokensLegend(options.legend);
         const documentSelector = client2.protocol2CodeConverter.asDocumentSelector(selector);
         if (documentProvider !== void 0) {
-          disposables.push(vscode2.languages.registerDocumentSemanticTokensProvider(documentSelector, documentProvider, legend));
+          disposables.push(vscode3.languages.registerDocumentSemanticTokensProvider(documentSelector, documentProvider, legend));
         }
         if (rangeProvider !== void 0) {
-          disposables.push(vscode2.languages.registerDocumentRangeSemanticTokensProvider(documentSelector, rangeProvider, legend));
+          disposables.push(vscode3.languages.registerDocumentRangeSemanticTokensProvider(documentSelector, rangeProvider, legend));
         }
-        return [new vscode2.Disposable(() => disposables.forEach((item) => item.dispose())), { range: rangeProvider, full: documentProvider, onDidChangeSemanticTokensEmitter: eventEmitter }];
+        return [new vscode3.Disposable(() => disposables.forEach((item) => item.dispose())), { range: rangeProvider, full: documentProvider, onDidChangeSemanticTokensEmitter: eventEmitter }];
       }
     };
     exports2.SemanticTokensFeature = SemanticTokensFeature;
@@ -14245,13 +14245,13 @@ var require_fileOperations = __commonJS({
       async filter(event, prop) {
         const fileMatches = await Promise.all(event.files.map(async (item) => {
           const uri = prop(item);
-          const path2 = uri.fsPath.replace(/\\/g, "/");
+          const path3 = uri.fsPath.replace(/\\/g, "/");
           for (const filters of this._filters.values()) {
             for (const filter of filters) {
               if (filter.scheme !== void 0 && filter.scheme !== uri.scheme) {
                 continue;
               }
-              if (filter.matcher.match(path2)) {
+              if (filter.matcher.match(path3)) {
                 if (filter.kind === void 0) {
                   return true;
                 }
@@ -14265,7 +14265,7 @@ var require_fileOperations = __commonJS({
                 }
               } else if (filter.kind === proto.FileOperationPatternKind.folder) {
                 const fileType = await _FileOperationFeature.getFileType(uri);
-                if (fileType === code.FileType.Directory && filter.matcher.match(`${path2}/`)) {
+                if (fileType === code.FileType.Directory && filter.matcher.match(`${path3}/`)) {
                   return true;
                 }
               }
@@ -17491,8 +17491,8 @@ var require_main4 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.SettingMonitor = exports2.LanguageClient = exports2.TransportKind = void 0;
     var cp = require("child_process");
-    var fs2 = require("fs");
-    var path2 = require("path");
+    var fs3 = require("fs");
+    var path3 = require("path");
     var vscode_1 = require("vscode");
     var Is = require_is();
     var client_1 = require_client();
@@ -17910,19 +17910,19 @@ var require_main4 = __commonJS({
         });
       }
       _getRuntimePath(runtime, serverWorkingDirectory) {
-        if (path2.isAbsolute(runtime)) {
+        if (path3.isAbsolute(runtime)) {
           return runtime;
         }
         const mainRootPath = this._mainGetRootPath();
         if (mainRootPath !== void 0) {
-          const result = path2.join(mainRootPath, runtime);
-          if (fs2.existsSync(result)) {
+          const result = path3.join(mainRootPath, runtime);
+          if (fs3.existsSync(result)) {
             return result;
           }
         }
         if (serverWorkingDirectory !== void 0) {
-          const result = path2.join(serverWorkingDirectory, runtime);
-          if (fs2.existsSync(result)) {
+          const result = path3.join(serverWorkingDirectory, runtime);
+          if (fs3.existsSync(result)) {
             return result;
           }
         }
@@ -17946,7 +17946,7 @@ var require_main4 = __commonJS({
         }
         if (cwd) {
           return new Promise((s) => {
-            fs2.lstat(cwd, (err, stats) => {
+            fs3.lstat(cwd, (err, stats) => {
               s(!err && stats.isDirectory() ? cwd : void 0);
             });
           });
@@ -18012,11 +18012,339 @@ __export(extension_exports, {
   deactivate: () => deactivate
 });
 module.exports = __toCommonJS(extension_exports);
+var vscode2 = __toESM(require("vscode"));
+var fs2 = __toESM(require("fs"));
+var path2 = __toESM(require("path"));
+var import_node = __toESM(require_node3());
+
+// src/mcpServer.ts
 var vscode = __toESM(require("vscode"));
 var fs = __toESM(require("fs"));
 var path = __toESM(require("path"));
-var import_node = __toESM(require_node3());
+var import_child_process = require("child_process");
+var DEFAULT_RATE_LIMITS = {
+  diagnostics: 10,
+  hover: 20,
+  definition: 10,
+  references: 5,
+  renamePreview: 2,
+  codeActions: 5
+};
+var McpServerManager = class {
+  process;
+  outputChannel;
+  context;
+  restartCount = 0;
+  lastRestartTime = 0;
+  MAX_RESTART_COUNT = 5;
+  RESTART_WINDOW_MS = 6e4;
+  // 1 minute
+  constructor(context) {
+    this.context = context;
+    this.outputChannel = vscode.window.createOutputChannel("DomainForge MCP Server");
+  }
+  /**
+   * Get the MCP configuration from VS Code settings.
+   */
+  getConfig() {
+    const config = vscode.workspace.getConfiguration("domainforge.mcp");
+    const rateLimits = {
+      diagnostics: config.get("rateLimits.diagnostics") ?? DEFAULT_RATE_LIMITS.diagnostics,
+      hover: config.get("rateLimits.hover") ?? DEFAULT_RATE_LIMITS.hover,
+      definition: config.get("rateLimits.definition") ?? DEFAULT_RATE_LIMITS.definition,
+      references: config.get("rateLimits.references") ?? DEFAULT_RATE_LIMITS.references,
+      renamePreview: config.get("rateLimits.renamePreview") ?? DEFAULT_RATE_LIMITS.renamePreview,
+      codeActions: config.get("rateLimits.codeActions") ?? DEFAULT_RATE_LIMITS.codeActions
+    };
+    return {
+      enable: config.get("enable") ?? false,
+      rateLimits,
+      auditLogPath: config.get("auditLog.path") ?? ""
+    };
+  }
+  /**
+   * Check if MCP server is enabled.
+   */
+  isEnabled() {
+    return this.getConfig().enable;
+  }
+  /**
+   * Detect the current platform and return the appropriate MCP binary path.
+   */
+  getBundledMcpBinaryPath() {
+    const platform = process.platform;
+    const arch = process.arch;
+    let platformDir;
+    let binaryName;
+    if (platform === "win32" && arch === "x64") {
+      platformDir = "windows-x64";
+      binaryName = "domainforge-mcp.exe";
+    } else if (platform === "darwin") {
+      binaryName = "domainforge-mcp";
+      if (arch === "x64") {
+        platformDir = "darwin-x64";
+      } else if (arch === "arm64") {
+        platformDir = "darwin-arm64";
+      } else {
+        return null;
+      }
+    } else if (platform === "linux") {
+      binaryName = "domainforge-mcp";
+      if (arch === "x64") {
+        platformDir = "linux-x64";
+      } else if (arch === "arm64") {
+        platformDir = "linux-arm64";
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+    const fullPath = path.join(this.context.extensionPath, "bin", platformDir, binaryName);
+    if (!fs.existsSync(fullPath)) {
+      console.warn(`MCP binary not found at detected path: ${fullPath}`);
+      return null;
+    }
+    return fullPath;
+  }
+  /**
+   * Get the path to the MCP server binary.
+   * Checks user configuration first, then falls back to bundled binary.
+   */
+  getMcpServerPath() {
+    const config = vscode.workspace.getConfiguration("domainforge.mcp");
+    const customPath = config.get("serverPath");
+    if (customPath && customPath.trim() !== "") {
+      return customPath;
+    }
+    return this.getBundledMcpBinaryPath();
+  }
+  /**
+   * Get the path to the LSP server binary (needed by MCP server).
+   */
+  getLspServerPath() {
+    const config = vscode.workspace.getConfiguration("domainforge");
+    const customPath = config.get("server.path");
+    if (customPath && customPath.trim() !== "") {
+      return customPath;
+    }
+    const platform = process.platform;
+    const arch = process.arch;
+    let platformDir;
+    let binaryName;
+    if (platform === "win32" && arch === "x64") {
+      platformDir = "windows-x64";
+      binaryName = "domainforge-lsp.exe";
+    } else if (platform === "darwin") {
+      binaryName = "domainforge-lsp";
+      if (arch === "x64") {
+        platformDir = "darwin-x64";
+      } else if (arch === "arm64") {
+        platformDir = "darwin-arm64";
+      } else {
+        return null;
+      }
+    } else if (platform === "linux") {
+      binaryName = "domainforge-lsp";
+      if (arch === "x64") {
+        platformDir = "linux-x64";
+      } else if (arch === "arm64") {
+        platformDir = "linux-arm64";
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+    const fullPath = path.join(this.context.extensionPath, "bin", platformDir, binaryName);
+    if (!fs.existsSync(fullPath)) {
+      return null;
+    }
+    return fullPath;
+  }
+  /**
+   * Get workspace folder paths for the MCP server allowlist.
+   */
+  getWorkspacePaths() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+      return [];
+    }
+    return workspaceFolders.map((folder) => folder.uri.fsPath);
+  }
+  /**
+   * Start the MCP server.
+   */
+  async start() {
+    if (this.process) {
+      this.outputChannel.appendLine("MCP server is already running");
+      return true;
+    }
+    const mcpConfig = this.getConfig();
+    if (!mcpConfig.enable) {
+      this.outputChannel.appendLine("MCP server is disabled in settings");
+      return false;
+    }
+    const mcpPath = this.getMcpServerPath();
+    if (!mcpPath) {
+      vscode.window.showErrorMessage(
+        `DomainForge MCP Server binary not found for platform: ${process.platform} (${process.arch}). Please specify 'domainforge.mcp.serverPath' in settings or ensure the binary is bundled.`
+      );
+      return false;
+    }
+    const lspPath = this.getLspServerPath();
+    if (!lspPath) {
+      vscode.window.showErrorMessage(
+        "DomainForge LSP Server binary not found. MCP server requires LSP server."
+      );
+      return false;
+    }
+    const workspacePaths = this.getWorkspacePaths();
+    if (workspacePaths.length === 0) {
+      vscode.window.showWarningMessage(
+        "No workspace folders open. MCP server will have limited functionality."
+      );
+    }
+    const args = [
+      "--lsp-path",
+      lspPath
+    ];
+    if (workspacePaths.length > 0) {
+      args.push("--workspace-root", workspacePaths[0]);
+    }
+    const env = {
+      ...process.env,
+      // Set Rust log level
+      RUST_LOG: vscode.workspace.getConfiguration("domainforge").get("trace.server") === "verbose" ? "debug" : "info"
+    };
+    env["MCP_RATE_LIMIT_DIAGNOSTICS"] = mcpConfig.rateLimits.diagnostics.toString();
+    env["MCP_RATE_LIMIT_HOVER"] = mcpConfig.rateLimits.hover.toString();
+    env["MCP_RATE_LIMIT_DEFINITION"] = mcpConfig.rateLimits.definition.toString();
+    env["MCP_RATE_LIMIT_REFERENCES"] = mcpConfig.rateLimits.references.toString();
+    env["MCP_RATE_LIMIT_RENAME_PREVIEW"] = mcpConfig.rateLimits.renamePreview.toString();
+    env["MCP_RATE_LIMIT_CODE_ACTIONS"] = mcpConfig.rateLimits.codeActions.toString();
+    if (mcpConfig.auditLogPath) {
+      env["MCP_AUDIT_LOG_PATH"] = mcpConfig.auditLogPath;
+    }
+    this.outputChannel.appendLine(`Starting MCP server: ${mcpPath}`);
+    this.outputChannel.appendLine(`Arguments: ${args.join(" ")}`);
+    this.outputChannel.appendLine(`Workspace paths: ${workspacePaths.join(", ")}`);
+    try {
+      this.process = (0, import_child_process.spawn)(mcpPath, args, {
+        env,
+        stdio: ["pipe", "pipe", "pipe"]
+      });
+      this.process.stdout?.on("data", (data) => {
+        this.outputChannel.appendLine(`[stdout] ${data.toString().trim()}`);
+      });
+      this.process.stderr?.on("data", (data) => {
+        this.outputChannel.appendLine(`[stderr] ${data.toString().trim()}`);
+      });
+      this.process.on("exit", (code, signal) => {
+        this.outputChannel.appendLine(`MCP server exited with code ${code}, signal ${signal}`);
+        this.process = void 0;
+        if (code !== 0 && code !== null) {
+          this.maybeRestart();
+        }
+      });
+      this.process.on("error", (error) => {
+        this.outputChannel.appendLine(`MCP server error: ${error.message}`);
+        vscode.window.showErrorMessage(`DomainForge MCP Server error: ${error.message}`);
+        this.process = void 0;
+      });
+      this.outputChannel.appendLine("MCP server started successfully");
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.outputChannel.appendLine(`Failed to start MCP server: ${message}`);
+      vscode.window.showErrorMessage(`Failed to start DomainForge MCP Server: ${message}`);
+      return false;
+    }
+  }
+  /**
+   * Attempt to restart the MCP server if it crashed.
+   */
+  async maybeRestart() {
+    const now = Date.now();
+    if (now - this.lastRestartTime > this.RESTART_WINDOW_MS) {
+      this.restartCount = 0;
+    }
+    if (this.restartCount >= this.MAX_RESTART_COUNT) {
+      this.outputChannel.appendLine(
+        `MCP server has crashed ${this.MAX_RESTART_COUNT} times in the last minute. Not restarting. Use 'DomainForge: Restart MCP Server' command to restart manually.`
+      );
+      vscode.window.showErrorMessage(
+        "DomainForge MCP server crashed repeatedly. Check the output channel for details."
+      );
+      return;
+    }
+    this.restartCount++;
+    this.lastRestartTime = now;
+    this.outputChannel.appendLine(`Restarting MCP server (attempt ${this.restartCount}/${this.MAX_RESTART_COUNT})...`);
+    await new Promise((resolve) => setTimeout(resolve, 1e3));
+    await this.start();
+  }
+  /**
+   * Stop the MCP server.
+   */
+  async stop() {
+    if (!this.process) {
+      return;
+    }
+    this.outputChannel.appendLine("Stopping MCP server...");
+    return new Promise((resolve) => {
+      if (!this.process) {
+        resolve();
+        return;
+      }
+      const forceKillTimeout = setTimeout(() => {
+        if (this.process) {
+          this.outputChannel.appendLine("Force killing MCP server...");
+          this.process.kill("SIGKILL");
+        }
+      }, 5e3);
+      this.process.once("exit", () => {
+        clearTimeout(forceKillTimeout);
+        this.process = void 0;
+        this.outputChannel.appendLine("MCP server stopped");
+        resolve();
+      });
+      this.process.kill("SIGTERM");
+    });
+  }
+  /**
+   * Restart the MCP server.
+   */
+  async restart() {
+    await this.stop();
+    return this.start();
+  }
+  /**
+   * Check if the MCP server is running.
+   */
+  isRunning() {
+    return this.process !== void 0 && !this.process.killed;
+  }
+  /**
+   * Get the output channel for MCP server logs.
+   */
+  getOutputChannel() {
+    return this.outputChannel;
+  }
+  /**
+   * Dispose of the MCP server manager.
+   */
+  dispose() {
+    this.stop().catch((err) => {
+      console.error("Error stopping MCP server during dispose:", err);
+    });
+    this.outputChannel.dispose();
+  }
+};
+
+// src/extension.ts
 var client;
+var mcpServerManager;
 function getBundledBinaryPath(context) {
   const platform = process.platform;
   const arch = process.arch;
@@ -18046,15 +18374,15 @@ function getBundledBinaryPath(context) {
   } else {
     return null;
   }
-  const fullPath = path.join(context.extensionPath, "bin", platformDir, binaryName);
-  if (!fs.existsSync(fullPath)) {
+  const fullPath = path2.join(context.extensionPath, "bin", platformDir, binaryName);
+  if (!fs2.existsSync(fullPath)) {
     console.warn(`LSP binary not found at detected path: ${fullPath}`);
     return null;
   }
   return fullPath;
 }
 function getServerPath(context) {
-  const config = vscode.workspace.getConfiguration("domainforge");
+  const config = vscode2.workspace.getConfiguration("domainforge");
   const customPath = config.get("server.path");
   if (customPath && customPath.trim() !== "") {
     return customPath;
@@ -18064,7 +18392,7 @@ function getServerPath(context) {
 function createLanguageClient(context) {
   const serverPath = getServerPath(context);
   if (!serverPath) {
-    vscode.window.showErrorMessage(
+    vscode2.window.showErrorMessage(
       `DomainForge Language Server binary not found for platform: ${process.platform} (${process.arch}). Please specify 'domainforge.server.path' in settings.`
     );
     return void 0;
@@ -18076,7 +18404,7 @@ function createLanguageClient(context) {
       env: {
         ...process.env,
         // Enable debug logging when trace is enabled
-        RUST_LOG: vscode.workspace.getConfiguration("domainforge").get("trace.server") === "verbose" ? "debug" : "info"
+        RUST_LOG: vscode2.workspace.getConfiguration("domainforge").get("trace.server") === "verbose" ? "debug" : "info"
       }
     }
   };
@@ -18097,7 +18425,7 @@ function createLanguageClient(context) {
     outputChannelName: "DomainForge Language Server",
     // Handle server notifications
     initializationFailedHandler: (error) => {
-      vscode.window.showErrorMessage(
+      vscode2.window.showErrorMessage(
         `DomainForge Language Server failed to initialize: ${error.message}`
       );
       return false;
@@ -18124,34 +18452,106 @@ async function startServer(context) {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    vscode.window.showErrorMessage(
+    vscode2.window.showErrorMessage(
       `Failed to start DomainForge Language Server: ${message}`
     );
   }
 }
+async function startMcpServerIfEnabled(context) {
+  if (!mcpServerManager) {
+    mcpServerManager = new McpServerManager(context);
+  }
+  if (mcpServerManager.isEnabled()) {
+    const started = await mcpServerManager.start();
+    if (started) {
+      console.log("DomainForge MCP Server started successfully");
+    }
+  }
+}
 async function activate(context) {
   console.log("DomainForge extension is activating...");
-  const restartCommand = vscode.commands.registerCommand(
+  mcpServerManager = new McpServerManager(context);
+  const restartCommand = vscode2.commands.registerCommand(
     "domainforge.restartServer",
     async () => {
-      vscode.window.showInformationMessage("Restarting DomainForge Language Server...");
+      vscode2.window.showInformationMessage("Restarting DomainForge Language Server...");
       await startServer(context);
-      vscode.window.showInformationMessage("DomainForge Language Server restarted");
+      vscode2.window.showInformationMessage("DomainForge Language Server restarted");
     }
   );
   context.subscriptions.push(restartCommand);
-  const configWatcher = vscode.workspace.onDidChangeConfiguration(async (event) => {
+  const restartMcpCommand = vscode2.commands.registerCommand(
+    "domainforge.restartMcpServer",
+    async () => {
+      if (!mcpServerManager) {
+        vscode2.window.showErrorMessage("MCP Server Manager not initialized");
+        return;
+      }
+      if (!mcpServerManager.isEnabled()) {
+        vscode2.window.showWarningMessage(
+          'MCP Server is not enabled. Set "domainforge.mcp.enable" to true in settings.'
+        );
+        return;
+      }
+      vscode2.window.showInformationMessage("Restarting DomainForge MCP Server...");
+      const success = await mcpServerManager.restart();
+      if (success) {
+        vscode2.window.showInformationMessage("DomainForge MCP Server restarted");
+      } else {
+        vscode2.window.showErrorMessage("Failed to restart DomainForge MCP Server");
+      }
+    }
+  );
+  context.subscriptions.push(restartMcpCommand);
+  const showMcpLogsCommand = vscode2.commands.registerCommand(
+    "domainforge.showMcpLogs",
+    () => {
+      if (mcpServerManager) {
+        mcpServerManager.getOutputChannel().show();
+      }
+    }
+  );
+  context.subscriptions.push(showMcpLogsCommand);
+  const configWatcher = vscode2.workspace.onDidChangeConfiguration(async (event) => {
     if (event.affectsConfiguration("domainforge.server.path")) {
-      vscode.window.showInformationMessage(
+      vscode2.window.showInformationMessage(
         "DomainForge server path changed. Restarting..."
       );
       await startServer(context);
     }
+    if (event.affectsConfiguration("domainforge.mcp.enable")) {
+      const config = vscode2.workspace.getConfiguration("domainforge.mcp");
+      const enabled = config.get("enable") ?? false;
+      if (enabled && mcpServerManager && !mcpServerManager.isRunning()) {
+        vscode2.window.showInformationMessage("Starting DomainForge MCP Server...");
+        await mcpServerManager.start();
+      } else if (!enabled && mcpServerManager && mcpServerManager.isRunning()) {
+        vscode2.window.showInformationMessage("Stopping DomainForge MCP Server...");
+        await mcpServerManager.stop();
+      }
+    }
+    if (event.affectsConfiguration("domainforge.mcp.serverPath")) {
+      if (mcpServerManager && mcpServerManager.isEnabled() && mcpServerManager.isRunning()) {
+        vscode2.window.showInformationMessage("MCP server path changed. Restarting...");
+        await mcpServerManager.restart();
+      }
+    }
+    if (event.affectsConfiguration("domainforge.mcp.rateLimits")) {
+      if (mcpServerManager && mcpServerManager.isRunning()) {
+        vscode2.window.showInformationMessage("MCP rate limits changed. Restarting to apply...");
+        await mcpServerManager.restart();
+      }
+    }
   });
   context.subscriptions.push(configWatcher);
   await startServer(context);
+  await startMcpServerIfEnabled(context);
 }
 async function deactivate() {
+  if (mcpServerManager) {
+    mcpServerManager.dispose();
+    mcpServerManager = void 0;
+  }
   if (client) {
     await client.stop();
     client = void 0;
