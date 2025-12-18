@@ -86,4 +86,5 @@ npx vsce publish --packagePath domainforge-X.Y.Z.vsix
 ## LSP Server Releases
 
 The extension downloads LSP binaries from the corresponding `domainforge-lsp` release.
-Ensure LSP releases are created before or simultaneously with extension releases.
+The extension downloads LSP binaries from the corresponding `domainforge-lsp` release.
+Ensure the `domainforge-lsp` repo is tagged with the same version. The extension release workflow includes a retry loop (15 mins) to wait for the LSP release artifacts to become available, so simultaneous tag pushes to both repos are supported.
