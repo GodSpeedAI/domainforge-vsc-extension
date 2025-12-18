@@ -12,10 +12,14 @@ suite('MCP Server Test Suite', () => {
 	test('MCP configuration schema should be defined', async () => {
 		const config = vscode.workspace.getConfiguration('domainforge.mcp');
 		
-		// Verify all configuration keys exist with correct defaults
-		assert.strictEqual(config.get('enable'), false, 'MCP enable should default to false');
-		assert.strictEqual(config.get('serverPath'), '', 'MCP serverPath should default to empty');
-		assert.strictEqual(config.get('auditLog.path'), '', 'MCP auditLog.path should default to empty');
+		// Verify configuration defaults using inspect to avoid workspace overrides
+		const enable = config.inspect('enable');
+		const serverPath = config.inspect('serverPath');
+		const auditLog = config.inspect('auditLog.path');
+
+		assert.strictEqual(enable?.defaultValue, false, 'MCP enable should default to false');
+		assert.strictEqual(serverPath?.defaultValue, '', 'MCP serverPath should default to empty');
+		assert.strictEqual(auditLog?.defaultValue, '', 'MCP auditLog.path should default to empty');
 	});
 
 	test('MCP rate limits configuration should have correct defaults', async () => {
@@ -47,9 +51,12 @@ suite('MCP Server Test Suite', () => {
 	});
 
 	test('MCP restart command should warn when MCP is disabled', async () => {
-		// Ensure MCP is disabled (default)
 		const config = vscode.workspace.getConfiguration('domainforge.mcp');
-		assert.strictEqual(config.get('enable'), false, 'MCP should be disabled by default');
+		
+		// Explicitly disable MCP to ensure test precondition
+		await config.update('enable', false, vscode.ConfigurationTarget.Global);
+		
+		assert.strictEqual(config.get('enable'), false, 'MCP should be disabled');
 
 		// The command should exist and be executable (it will show a warning)
 		// We verify the command doesn't throw
