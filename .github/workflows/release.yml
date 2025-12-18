@@ -34,6 +34,19 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: release-${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            release-${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -86,9 +99,10 @@ jobs:
         with:
           name: domainforge-vsix
           path: '*.vsix'
+          retention-days: 30
 
   release:
-    name: Create Release
+    name: Create GitHub Release
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -104,3 +118,40 @@ jobs:
         with:
           files: '*.vsix'
           generate_release_notes: true
+
+  publish:
+    name: Publish to VS Code Marketplace
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only publish if VSCE_PAT secret is configured
+    if: ${{ vars.MARKETPLACE_PUBLISH_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install vsce
+        run: pnpm add -D @vscode/vsce
+
+      - name: Download VSIX
+        uses: actions/download-artifact@v4
+        with:
+          name: domainforge-vsix
+          path: ./
+
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish --packagePath *.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
