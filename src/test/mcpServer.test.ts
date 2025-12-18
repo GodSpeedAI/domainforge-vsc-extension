@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 /**
  * Test suite for MCP (Model Context Protocol) server integration.
- * 
+ *
  * These tests verify the configuration schema and command registration.
  * Note: Full integration tests with the actual MCP binary require the binary to be present,
  * which only happens after the release process bundles the binaries.
@@ -19,7 +19,7 @@ suite('MCP Server Test Suite', () => {
 
 	test('MCP configuration schema should be defined', async () => {
 		const config = vscode.workspace.getConfiguration('domainforge.mcp');
-		
+
 		// Verify configuration defaults using inspect to avoid workspace overrides
 		const enable = config.inspect('enable');
 		const serverPath = config.inspect('serverPath');
@@ -32,7 +32,7 @@ suite('MCP Server Test Suite', () => {
 
 	test('MCP rate limits configuration should have correct defaults', async () => {
 		const config = vscode.workspace.getConfiguration('domainforge.mcp');
-		
+
 		// Verify rate limits with their documented defaults
 		assert.strictEqual(config.get('rateLimits.diagnostics'), 10, 'diagnostics rate limit should be 10');
 		assert.strictEqual(config.get('rateLimits.hover'), 20, 'hover rate limit should be 20');
@@ -63,13 +63,13 @@ suite('MCP Server Test Suite', () => {
 	test('MCP restart command should warn when MCP is disabled', async () => {
 		await activateExtension();
 		let config = vscode.workspace.getConfiguration('domainforge.mcp');
-		
+
 		// Explicitly disable MCP to ensure test precondition
 		await config.update('enable', false, vscode.ConfigurationTarget.Global);
-		
+
 		// Refresh config to ensure we get the updated value
 		config = vscode.workspace.getConfiguration('domainforge.mcp');
-		
+
 		assert.strictEqual(config.get('enable'), false, 'MCP should be disabled');
 
 		// The command should exist and be executable (it will show a warning)
