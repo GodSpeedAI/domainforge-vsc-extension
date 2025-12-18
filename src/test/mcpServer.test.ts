@@ -9,6 +9,14 @@ import * as vscode from 'vscode';
  * which only happens after the release process bundles the binaries.
  */
 suite('MCP Server Test Suite', () => {
+	async function activateExtension(): Promise<void> {
+		const ext = vscode.extensions.getExtension('GodSpeedAI.domainforge');
+		assert.ok(ext, 'Extension not found');
+		if (!ext.isActive) {
+			await ext.activate();
+		}
+	}
+
 	test('MCP configuration schema should be defined', async () => {
 		const config = vscode.workspace.getConfiguration('domainforge.mcp');
 		
@@ -35,6 +43,7 @@ suite('MCP Server Test Suite', () => {
 	});
 
 	test('MCP restart command should be registered', async () => {
+		await activateExtension();
 		const commands = await vscode.commands.getCommands(true);
 		assert.ok(
 			commands.includes('domainforge.restartMcpServer'),
@@ -43,6 +52,7 @@ suite('MCP Server Test Suite', () => {
 	});
 
 	test('MCP show logs command should be registered', async () => {
+		await activateExtension();
 		const commands = await vscode.commands.getCommands(true);
 		assert.ok(
 			commands.includes('domainforge.showMcpLogs'),
@@ -51,6 +61,7 @@ suite('MCP Server Test Suite', () => {
 	});
 
 	test('MCP restart command should warn when MCP is disabled', async () => {
+		await activateExtension();
 		let config = vscode.workspace.getConfiguration('domainforge.mcp');
 		
 		// Explicitly disable MCP to ensure test precondition
