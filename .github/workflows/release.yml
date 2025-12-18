@@ -64,6 +64,18 @@ jobs:
           # Create bin directory for server binaries
           mkdir -p bin/linux-x64 bin/linux-arm64 bin/windows-x64 bin/darwin-x64 bin/darwin-arm64
           
+          echo "Waiting for LSP release v${VERSION}..."
+          
+          # Retry loop to wait for LSP release (max 15 minutes)
+          for i in {1..30}; do
+            if gh release view "v${VERSION}" --repo GodSpeedAI/domainforge-lsp >/dev/null 2>&1; then
+              echo "LSP release found!"
+              break
+            fi
+            echo "Waiting for LSP release... ($i/30)"
+            sleep 30
+          done
+          
           echo "Downloading LSP binaries for version v${VERSION}..."
           
           # Download all platform binaries
