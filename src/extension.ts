@@ -4,6 +4,9 @@
  * This extension provides Language Server Protocol (LSP) integration for the
  * DomainForge SEA DSL. It spawns the Rust-based LSP server and forwards
  * all language operations to it.
+ * 
+ * Optionally, it can also spawn the MCP (Model Context Protocol) server
+ * to enable AI agent integration.
  */
 
 import * as vscode from 'vscode';
@@ -15,8 +18,10 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
+import { McpServerManager } from './mcpServer';
 
 let client: LanguageClient | undefined;
+let mcpServerManager: McpServerManager | undefined;
 
 /**
  * Detect the current platform and return the appropriate binary path relative to the extension folder.
@@ -170,13 +175,34 @@ async function startServer(context: vscode.ExtensionContext): Promise<void> {
 }
 
 /**
+ * Start the MCP server if enabled.
+ */
+async function startMcpServerIfEnabled(context: vscode.ExtensionContext): Promise<void> {
+	if (!mcpServerManager) {
+		mcpServerManager = new McpServerManager(context);
+	}
+
+	if (mcpServerManager.isEnabled()) {
+		const started = await mcpServerManager.start();
+		if (started) {
+			console.log('DomainForge MCP Server started successfully');
+		}
+	}
+}
+
+
+
+/**
  * Activate the extension.
  * Called when VS Code first encounters a .sea file or when the extension is explicitly activated.
  */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	console.log('DomainForge extension is activating...');
 
-	// Register restart command
+	// Initialize MCP server manager
+	mcpServerManager = new McpServerManager(context);
+
+	// Register restart LSP server command
 	const restartCommand = vscode.commands.registerCommand(
 		'domainforge.restartServer',
 		async () => {
@@ -187,8 +213,47 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 	);
 	context.subscriptions.push(restartCommand);
 
-	// Watch for configuration changes that affect the server path
+	// Register restart MCP server command
+	const restartMcpCommand = vscode.commands.registerCommand(
+		'domainforge.restartMcpServer',
+		async () => {
+			if (!mcpServerManager) {
+				vscode.window.showErrorMessage('MCP Server Manager not initialized');
+				return;
+			}
+
+			if (!mcpServerManager.isEnabled()) {
+				vscode.window.showWarningMessage(
+					'MCP Server is not enabled. Set "domainforge.mcp.enable" to true in settings.'
+				);
+				return;
+			}
+
+			vscode.window.showInformationMessage('Restarting DomainForge MCP Server...');
+			const success = await mcpServerManager.restart();
+			if (success) {
+				vscode.window.showInformationMessage('DomainForge MCP Server restarted');
+			} else {
+				vscode.window.showErrorMessage('Failed to restart DomainForge MCP Server');
+			}
+		}
+	);
+	context.subscriptions.push(restartMcpCommand);
+
+	// Register show MCP logs command
+	const showMcpLogsCommand = vscode.commands.registerCommand(
+		'domainforge.showMcpLogs',
+		() => {
+			if (mcpServerManager) {
+				mcpServerManager.getOutputChannel().show();
+			}
+		}
+	);
+	context.subscriptions.push(showMcpLogsCommand);
+
+	// Watch for configuration changes
 	const configWatcher = vscode.workspace.onDidChangeConfiguration(async (event) => {
+		// Handle LSP server path changes
 		if (event.affectsConfiguration('domainforge.server.path')) {
 			// Server path changed - restart with new binary
 			vscode.window.showInformationMessage(
@@ -196,6 +261,37 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			);
 			await startServer(context);
 		}
+
+		// Handle MCP enable/disable changes
+		if (event.affectsConfiguration('domainforge.mcp.enable')) {
+			const config = vscode.workspace.getConfiguration('domainforge.mcp');
+			const enabled = config.get<boolean>('enable') ?? false;
+
+			if (enabled && mcpServerManager && !mcpServerManager.isRunning()) {
+				vscode.window.showInformationMessage('Starting DomainForge MCP Server...');
+				await mcpServerManager.start();
+			} else if (!enabled && mcpServerManager && mcpServerManager.isRunning()) {
+				vscode.window.showInformationMessage('Stopping DomainForge MCP Server...');
+				await mcpServerManager.stop();
+			}
+		}
+
+		// Handle MCP server path changes
+		if (event.affectsConfiguration('domainforge.mcp.serverPath')) {
+			if (mcpServerManager && mcpServerManager.isEnabled() && mcpServerManager.isRunning()) {
+				vscode.window.showInformationMessage('MCP server path changed. Restarting...');
+				await mcpServerManager.restart();
+			}
+		}
+
+		// Handle MCP rate limit changes (restart to apply new limits)
+		if (event.affectsConfiguration('domainforge.mcp.rateLimits')) {
+			if (mcpServerManager && mcpServerManager.isRunning()) {
+				vscode.window.showInformationMessage('MCP rate limits changed. Restarting to apply...');
+				await mcpServerManager.restart();
+			}
+		}
+
 		// Note: Other config changes (like formatting options) are handled
 		// automatically by the language client via synchronize.configurationSection
 	});
@@ -203,6 +299,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 	// Start the language server
 	await startServer(context);
+
+	// Start MCP server if enabled
+	await startMcpServerIfEnabled(context);
 }
 
 /**
@@ -210,6 +309,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
  * Called when the extension is being deactivated.
  */
 export async function deactivate(): Promise<void> {
+	// Stop MCP server
+	if (mcpServerManager) {
+		mcpServerManager.dispose();
+		mcpServerManager = undefined;
+	}
+
+	// Stop LSP client
 	if (client) {
 		await client.stop();
 		client = undefined;

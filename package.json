@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/GodSpeedAI/domainforge-vsc-extension"
   },
+  "icon": "images/icon.png",
   "license": "MIT",
   "engines": {
     "vscode": "^1.107.0"
@@ -24,10 +25,11 @@
     "domain-modeling",
     "entity"
   ],
-  "activationEvents": [
-    "onLanguage:domainforge"
-  ],
   "main": "./dist/extension.js",
+  "browser": "./dist/web/extensionWeb.js",
+  "extensionKind": [
+    "workspace"
+  ],
   "contributes": {
     "languages": [
       {
@@ -87,6 +89,72 @@
           "minimum": 1,
           "maximum": 8,
           "description": "Number of spaces per indent level when using space indentation."
+        },
+        "domainforge.mcp.enable": {
+          "type": "boolean",
+          "scope": "machine",
+          "default": false,
+          "description": "Enable the DomainForge MCP (Model Context Protocol) server for AI agent integration."
+        },
+        "domainforge.mcp.serverPath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "description": "Path to the DomainForge MCP server binary. Leave empty to use bundled binary."
+        },
+        "domainforge.mcp.rateLimits.diagnostics": {
+          "type": "number",
+          "scope": "machine",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum requests per second for the diagnostics tool."
+        },
+        "domainforge.mcp.rateLimits.hover": {
+          "type": "number",
+          "scope": "machine",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum requests per second for the hover tool."
+        },
+        "domainforge.mcp.rateLimits.definition": {
+          "type": "number",
+          "scope": "machine",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum requests per second for the definition tool."
+        },
+        "domainforge.mcp.rateLimits.references": {
+          "type": "number",
+          "scope": "machine",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum requests per second for the references tool."
+        },
+        "domainforge.mcp.rateLimits.renamePreview": {
+          "type": "number",
+          "scope": "machine",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Maximum requests per second for the rename preview tool."
+        },
+        "domainforge.mcp.rateLimits.codeActions": {
+          "type": "number",
+          "scope": "machine",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum requests per second for the code actions tool."
+        },
+        "domainforge.mcp.auditLog.path": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "description": "Path to the MCP server audit log file. Leave empty to disable audit logging."
         }
       }
     },
@@ -94,12 +162,21 @@
       {
         "command": "domainforge.restartServer",
         "title": "DomainForge: Restart Language Server"
+      },
+      {
+        "command": "domainforge.restartMcpServer",
+        "title": "DomainForge: Restart MCP Server"
+      },
+      {
+        "command": "domainforge.showMcpLogs",
+        "title": "DomainForge: Show MCP Server Logs"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
     "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "compile-web": "node esbuild.js --web",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
@@ -107,24 +184,28 @@
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "check-types": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
+    "lint": "eslint src --ignore-pattern 'src/web/**'",
+    "test": "vscode-test",
+    "test-web": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=.",
+    "copy-wasm": "cp ../domainforge/pkg/sea_core.js ../domainforge/pkg/sea_core.d.ts ../domainforge/pkg/sea_core_bg.wasm wasm/"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
   },
   "devDependencies": {
-    "@types/vscode": "^1.107.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.48.1",
-    "eslint": "^9.39.1",
+    "@types/vscode": "^1.107.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-web": "^0.0.77",
     "esbuild": "^0.27.1",
+    "eslint": "^9.39.1",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.48.1"
   }
 }
-

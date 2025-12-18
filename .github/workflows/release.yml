@@ -34,6 +34,19 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: release-${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            release-${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -51,19 +64,44 @@ jobs:
           # Create bin directory for server binaries
           mkdir -p bin/linux-x64 bin/linux-arm64 bin/windows-x64 bin/darwin-x64 bin/darwin-arm64
           
+          echo "Waiting for LSP release v${VERSION}..."
+          
+          # Retry loop to wait for LSP release (max 15 minutes)
+          for i in {1..30}; do
+            if gh release view "v${VERSION}" --repo GodSpeedAI/domainforge-lsp >/dev/null 2>&1; then
+              echo "LSP release found!"
+              break
+            fi
+            echo "Waiting for LSP release... ($i/30)"
+            sleep 30
+          done
+          
           echo "Downloading LSP binaries for version v${VERSION}..."
           
           # Download all platform binaries
-          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
-            --pattern "domainforge-lsp-linux-x64/*" --dir bin/linux-x64 || echo "::warning::Linux x64 binary not found"
-          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
-            --pattern "domainforge-lsp-linux-arm64/*" --dir bin/linux-arm64 || echo "::warning::Linux ARM64 binary not found"
-          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
-            --pattern "domainforge-lsp-windows-x64/*" --dir bin/windows-x64 || echo "::warning::Windows binary not found"
-          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
-            --pattern "domainforge-lsp-darwin-x64/*" --dir bin/darwin-x64 || echo "::warning::macOS x64 binary not found"
-          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp \
-            --pattern "domainforge-lsp-darwin-arm64/*" --dir bin/darwin-arm64 || echo "::warning::macOS ARM binary not found"
+          # Linux x64
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-linux-x64" --output "bin/linux-x64/domainforge-lsp" || echo "::warning::Linux x64 LSP not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-linux-x64-mcp" --output "bin/linux-x64/domainforge-mcp" || echo "::warning::Linux x64 MCP not found"
+          chmod +x bin/linux-x64/domainforge-lsp bin/linux-x64/domainforge-mcp || true
+
+          # Linux ARM64
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-linux-arm64" --output "bin/linux-arm64/domainforge-lsp" || echo "::warning::Linux ARM64 LSP not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-linux-arm64-mcp" --output "bin/linux-arm64/domainforge-mcp" || echo "::warning::Linux ARM64 MCP not found"
+          chmod +x bin/linux-arm64/domainforge-lsp bin/linux-arm64/domainforge-mcp || true
+
+          # Windows x64
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-windows-x64.exe" --output "bin/windows-x64/domainforge-lsp.exe" || echo "::warning::Windows LSP not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-windows-x64-mcp.exe" --output "bin/windows-x64/domainforge-mcp.exe" || echo "::warning::Windows MCP not found"
+
+          # macOS x64
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-darwin-x64" --output "bin/darwin-x64/domainforge-lsp" || echo "::warning::macOS x64 LSP not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-darwin-x64-mcp" --output "bin/darwin-x64/domainforge-mcp" || echo "::warning::macOS x64 MCP not found"
+          chmod +x bin/darwin-x64/domainforge-lsp bin/darwin-x64/domainforge-mcp || true
+
+          # macOS ARM64
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-darwin-arm64" --output "bin/darwin-arm64/domainforge-lsp" || echo "::warning::macOS ARM LSP not found"
+          gh release download "v${VERSION}" --repo GodSpeedAI/domainforge-lsp --pattern "domainforge-lsp-darwin-arm64-mcp" --output "bin/darwin-arm64/domainforge-mcp" || echo "::warning::macOS ARM MCP not found"
+          chmod +x bin/darwin-arm64/domainforge-lsp bin/darwin-arm64/domainforge-mcp || true
           
           echo "Downloaded binaries:"
           find bin -type f | head -20
@@ -86,9 +124,10 @@ jobs:
         with:
           name: domainforge-vsix
           path: '*.vsix'
+          retention-days: 30
 
   release:
-    name: Create Release
+    name: Create GitHub Release
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -104,3 +143,40 @@ jobs:
         with:
           files: '*.vsix'
           generate_release_notes: true
+
+  publish:
+    name: Publish to VS Code Marketplace
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only publish if VSCE_PAT secret is configured
+    if: ${{ vars.MARKETPLACE_PUBLISH_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install vsce
+        run: pnpm add -D @vscode/vsce
+
+      - name: Download VSIX
+        uses: actions/download-artifact@v4
+        with:
+          name: domainforge-vsix
+          path: ./
+
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish --packagePath *.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
