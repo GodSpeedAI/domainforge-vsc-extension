@@ -51,10 +51,13 @@ suite('MCP Server Test Suite', () => {
 	});
 
 	test('MCP restart command should warn when MCP is disabled', async () => {
-		const config = vscode.workspace.getConfiguration('domainforge.mcp');
+		let config = vscode.workspace.getConfiguration('domainforge.mcp');
 		
 		// Explicitly disable MCP to ensure test precondition
 		await config.update('enable', false, vscode.ConfigurationTarget.Global);
+		
+		// Refresh config to ensure we get the updated value
+		config = vscode.workspace.getConfiguration('domainforge.mcp');
 		
 		assert.strictEqual(config.get('enable'), false, 'MCP should be disabled');
 
