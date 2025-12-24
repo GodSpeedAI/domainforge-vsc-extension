@@ -76,7 +76,7 @@ This extension works in browser-based VS Code environments:
 
 > **Note**: Web version uses sea-core WASM for core functionality. Advanced features require the native LSP server.
 
-## Usage
+## Quick Start
 
 1. Open a `.sea` file
 2. Enjoy syntax highlighting and diagnostics
@@ -84,16 +84,88 @@ This extension works in browser-based VS Code environments:
 4. Hover over entities/resources for information
 5. Ctrl+Click to go to definition
 
-## Example
+---
+
+## SEA DSL Syntax Reference
+
+SEA (Structured Entity Architecture) models business domains using **five universal primitives**:
+
+| Primitive    | Purpose                      | Example                                   |
+| ------------ | ---------------------------- | ----------------------------------------- |
+| **Entity**   | Actors and locations         | `Entity "Warehouse" in logistics`         |
+| **Resource** | Things of value that move    | `Resource "Money" currency in finance`    |
+| **Flow**     | Movement between entities    | `Flow "Money" from "A" to "B" quantity 1` |
+| **Pattern**  | Reusable validation patterns | `Pattern "Email" matches "^.+@.+$"`       |
+| **Policy**   | Business rules & constraints | `Policy min_qty as: quantity >= 10`       |
+
+### Basic Example
 
 ```sea
+// Define entities (who/where)
 Entity "Warehouse" in logistics
 Entity "Factory" in manufacturing
 
-Resource "Cameras" units
+// Define resources (what moves)
+Resource "Camera" units in inventory
 
-Flow "Cameras" from "Warehouse" to "Factory" quantity 100
+// Define flows (how things move)
+Flow "Camera" from "Warehouse" to "Factory" quantity 100
+
+// Define validation patterns
+Pattern "SKU" matches "^[A-Z]{3}-[0-9]{4}$"
+
+// Define business rules
+Policy min_shipment as: quantity >= 10
 ```
+
+### Advanced Features
+
+```sea
+// Versioned entities with evolution tracking
+Entity "Vendor" v2.0.0
+  @replaces "Supplier" v1.0.0
+  @changes ["renamed", "added_fields"]
+
+// Roles and relations
+Role "Approver" in governance
+
+Relation "Payment"
+  subject: "Buyer"
+  predicate: "pays"
+  object: "Seller"
+  via: flow "Money"
+
+// Typed instances
+Instance acme_corp of "Vendor" {
+  name: "Acme Corporation",
+  credit_limit: 50000 "USD"
+}
+
+// Quantified policy expressions
+Policy all_shipments_inspected as:
+  forall s in flows: (s.inspected = true)
+```
+
+### Supported Declarations
+
+| Declaration   | Syntax                                                    |
+| ------------- | --------------------------------------------------------- |
+| Entity        | `Entity "Name" [vX.Y.Z] [in domain]`                      |
+| Resource      | `Resource "Name" [unit] [in domain]`                      |
+| Flow          | `Flow "Resource" from "A" to "B" [quantity N]`            |
+| Pattern       | `Pattern "Name" matches "regex"`                          |
+| Role          | `Role "Name" [in domain]`                                 |
+| Relation      | `Relation "Name" subject: ... predicate: ... object: ...` |
+| Instance      | `Instance id of "Entity" { field: value }`                |
+| Policy        | `Policy name as: expression`                              |
+| Dimension     | `Dimension "Name"`                                        |
+| Unit          | `Unit "Name" of "Dimension" factor N base "Base"`         |
+| Metric        | `Metric "Name" as: expression`                            |
+| Mapping       | `Mapping "Name" for format { ... }`                       |
+| Projection    | `Projection "Name" for format { ... }`                    |
+| ConceptChange | `ConceptChange "Name" @from_version ... @to_version ...`  |
+
+---
 
 ## Known Issues
 
@@ -102,12 +174,7 @@ Flow "Cameras" from "Warehouse" to "Factory" quantity 100
 
 ## Release Notes
 
-### 0.0.1
-
-- Initial release
-- Syntax highlighting for SEA DSL
-- LSP integration for diagnostics and formatting
-- Web extension support via WASM
+See the [DomainForge Changelog](https://github.com/GodSpeedAI/DomainForge/blob/main/CHANGELOG.md) for detailed release history.
 
 ## Development
 
