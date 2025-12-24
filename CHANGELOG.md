@@ -10,6 +10,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
+- **Documentation**: Updated README with comprehensive SEA DSL syntax reference
+
+  - Basic and advanced grammar examples
+  - All 14 declaration types documented
+  - Link to DomainForge changelog for release notes
+
 - **WASM Update**: Updated vendored sea-core WASM to v0.7.1
   - AST v3 schema with expanded node definitions
   - Resource/Flow annotations support (`@replaces`, `@changes`)
