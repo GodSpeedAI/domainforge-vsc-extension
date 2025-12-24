@@ -216,7 +216,7 @@ if (!('encodeInto' in cachedTextEncoder)) {
             read: arg.length,
             written: buf.length
         };
-    };
+    }
 }
 
 let WASM_VECTOR_LEN = 0;
@@ -233,6 +233,10 @@ const EvaluationResultFinalization = (typeof FinalizationRegistry === 'undefined
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_evaluationresult_free(ptr >>> 0, 1));
 
+const ExpressionFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_expression_free(ptr >>> 0, 1));
+
 const FlowFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_flow_free(ptr >>> 0, 1));
@@ -245,6 +249,10 @@ const InstanceFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_instance_free(ptr >>> 0, 1));
 
+const NormalizedExpressionFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_normalizedexpression_free(ptr >>> 0, 1));
+
 const ResourceFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_resource_free(ptr >>> 0, 1));
@@ -256,6 +264,47 @@ const UnitFinalization = (typeof FinalizationRegistry === 'undefined')
 const ViolationFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_violation_free(ptr >>> 0, 1));
+
+const WindowSpecFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_windowspec_free(ptr >>> 0, 1));
+
+/**
+ * @enum {0 | 1 | 2 | 3 | 4}
+ */
+export const AggregateFunction = Object.freeze({
+    Count: 0, "0": "Count",
+    Sum: 1, "1": "Sum",
+    Min: 2, "2": "Min",
+    Max: 3, "3": "Max",
+    Avg: 4, "4": "Avg",
+});
+
+/**
+ * @enum {0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19}
+ */
+export const BinaryOp = Object.freeze({
+    And: 0, "0": "And",
+    Or: 1, "1": "Or",
+    Equal: 2, "2": "Equal",
+    NotEqual: 3, "3": "NotEqual",
+    GreaterThan: 4, "4": "GreaterThan",
+    LessThan: 5, "5": "LessThan",
+    GreaterThanOrEqual: 6, "6": "GreaterThanOrEqual",
+    LessThanOrEqual: 7, "7": "LessThanOrEqual",
+    Plus: 8, "8": "Plus",
+    Minus: 9, "9": "Minus",
+    Multiply: 10, "10": "Multiply",
+    Divide: 11, "11": "Divide",
+    Contains: 12, "12": "Contains",
+    StartsWith: 13, "13": "StartsWith",
+    EndsWith: 14, "14": "EndsWith",
+    Matches: 15, "15": "Matches",
+    HasRole: 16, "16": "HasRole",
+    Before: 17, "17": "Before",
+    After: 18, "18": "After",
+    During: 19, "19": "During",
+});
 
 export class Dimension {
     __destroy_into_raw() {
@@ -497,6 +546,338 @@ export class EvaluationResult {
     }
 }
 if (Symbol.dispose) EvaluationResult.prototype[Symbol.dispose] = EvaluationResult.prototype.free;
+
+/**
+ * A policy expression that can be normalized and compared for equivalence.
+ */
+export class Expression {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Expression.prototype);
+        obj.__wbg_ptr = ptr;
+        ExpressionFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        ExpressionFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_expression_free(ptr, 0);
+    }
+    /**
+     * Create an aggregation expression (e.g., COUNT(items)).
+     * @param {AggregateFunction} _function
+     * @param {Expression} collection
+     * @param {string | null} [field]
+     * @param {Expression | null} [filter]
+     * @returns {Expression}
+     */
+    static aggregation(_function, collection, field, filter) {
+        _assertClass(collection, Expression);
+        var ptr0 = isLikeNone(field) ? 0 : passStringToWasm0(field, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        var len0 = WASM_VECTOR_LEN;
+        let ptr1 = 0;
+        if (!isLikeNone(filter)) {
+            _assertClass(filter, Expression);
+            ptr1 = filter.__destroy_into_raw();
+        }
+        const ret = wasm.expression_aggregation(_function, collection.__wbg_ptr, ptr0, len0, ptr1);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a literal boolean expression.
+     * @param {boolean} value
+     * @returns {Expression}
+     */
+    static literalBool(value) {
+        const ret = wasm.expression_literalBool(value);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Check if this expression is semantically equivalent to another.
+     * @param {Expression} other
+     * @returns {boolean}
+     */
+    isEquivalent(other) {
+        _assertClass(other, Expression);
+        const ret = wasm.expression_isEquivalent(this.__wbg_ptr, other.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * Create a member access expression (e.g., user.name).
+     * @param {string} object
+     * @param {string} member
+     * @returns {Expression}
+     */
+    static memberAccess(object, member) {
+        const ptr0 = passStringToWasm0(object, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(member, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_memberAccess(ptr0, len0, ptr1, len1);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a literal number expression.
+     * @param {number} value
+     * @returns {Expression}
+     */
+    static literalNumber(value) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.expression_literalNumber(retptr, value);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Expression.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Create a literal string expression.
+     * @param {string} value
+     * @returns {Expression}
+     */
+    static literalString(value) {
+        const ptr0 = passStringToWasm0(value, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_literalString(ptr0, len0);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Get the string representation of this expression.
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.expression_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Create a quantifier expression (ForAll, Exists, ExistsUnique).
+     * @param {Quantifier} q
+     * @param {string} variable
+     * @param {Expression} collection
+     * @param {Expression} condition
+     * @returns {Expression}
+     */
+    static quantifier_expr(q, variable, collection, condition) {
+        const ptr0 = passStringToWasm0(variable, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        _assertClass(collection, Expression);
+        _assertClass(condition, Expression);
+        const ret = wasm.expression_quantifier_expr(q, ptr0, len0, collection.__wbg_ptr, condition.__wbg_ptr);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create an aggregation comprehension expression.
+     * @param {AggregateFunction} _function
+     * @param {string} variable
+     * @param {Expression} collection
+     * @param {Expression} predicate
+     * @param {Expression} projection
+     * @param {WindowSpec | null} [window]
+     * @param {string | null} [target_unit]
+     * @returns {Expression}
+     */
+    static aggregationComprehension(_function, variable, collection, predicate, projection, window, target_unit) {
+        const ptr0 = passStringToWasm0(variable, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        _assertClass(collection, Expression);
+        _assertClass(predicate, Expression);
+        _assertClass(projection, Expression);
+        let ptr1 = 0;
+        if (!isLikeNone(window)) {
+            _assertClass(window, WindowSpec);
+            ptr1 = window.__destroy_into_raw();
+        }
+        var ptr2 = isLikeNone(target_unit) ? 0 : passStringToWasm0(target_unit, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        var len2 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_aggregationComprehension(_function, ptr0, len0, collection.__wbg_ptr, predicate.__wbg_ptr, projection.__wbg_ptr, ptr1, ptr2, len2);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a cast expression (e.g., x as "Money").
+     * @param {Expression} operand
+     * @param {string} target_type
+     * @returns {Expression}
+     */
+    static cast(operand, target_type) {
+        _assertClass(operand, Expression);
+        const ptr0 = passStringToWasm0(target_type, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_cast(operand.__wbg_ptr, ptr0, len0);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a time literal expression (ISO 8601 timestamp).
+     * @param {string} timestamp
+     * @returns {Expression}
+     */
+    static time(timestamp) {
+        const ptr0 = passStringToWasm0(timestamp, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_time(ptr0, len0);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a unary expression (e.g., NOT x).
+     * @param {UnaryOp} op
+     * @param {Expression} operand
+     * @returns {Expression}
+     */
+    static unary(op, operand) {
+        _assertClass(operand, Expression);
+        const ret = wasm.expression_unary(op, operand.__wbg_ptr);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a binary expression (e.g., left AND right).
+     * @param {BinaryOp} op
+     * @param {Expression} left
+     * @param {Expression} right
+     * @returns {Expression}
+     */
+    static binary(op, left, right) {
+        _assertClass(left, Expression);
+        _assertClass(right, Expression);
+        const ret = wasm.expression_binary(op, left.__wbg_ptr, right.__wbg_ptr);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Check equality with another expression.
+     * @param {Expression} other
+     * @returns {boolean}
+     */
+    equals(other) {
+        _assertClass(other, Expression);
+        const ret = wasm.expression_equals(this.__wbg_ptr, other.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * Create a literal expression from a JSON string.
+     * @param {string} value_json
+     * @returns {Expression}
+     */
+    static literal(value_json) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(value_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.expression_literal(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Expression.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Create a group-by expression.
+     * @param {string} variable
+     * @param {Expression} collection
+     * @param {Expression} key
+     * @param {Expression} condition
+     * @param {Expression | null} [filter]
+     * @returns {Expression}
+     */
+    static groupBy(variable, collection, key, condition, filter) {
+        const ptr0 = passStringToWasm0(variable, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        _assertClass(collection, Expression);
+        _assertClass(key, Expression);
+        _assertClass(condition, Expression);
+        let ptr1 = 0;
+        if (!isLikeNone(filter)) {
+            _assertClass(filter, Expression);
+            ptr1 = filter.__destroy_into_raw();
+        }
+        const ret = wasm.expression_groupBy(ptr0, len0, collection.__wbg_ptr, key.__wbg_ptr, condition.__wbg_ptr, ptr1);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create an interval literal expression.
+     * @param {string} start
+     * @param {string} end
+     * @returns {Expression}
+     */
+    static interval(start, end) {
+        const ptr0 = passStringToWasm0(start, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(end, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_interval(ptr0, len0, ptr1, len1);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Create a quantity literal expression (e.g., "100 USD").
+     * @param {string} value
+     * @param {string} unit
+     * @returns {Expression}
+     */
+    static quantity(value, unit) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(value, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(unit, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.expression_quantity(retptr, ptr0, len0, ptr1, len1);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Expression.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Create a variable expression.
+     * @param {string} name
+     * @returns {Expression}
+     */
+    static variable(name) {
+        const ptr0 = passStringToWasm0(name, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.expression_variable(ptr0, len0);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Normalize this expression to canonical form.
+     * @returns {NormalizedExpression}
+     */
+    normalize() {
+        const ret = wasm.expression_normalize(this.__wbg_ptr);
+        return NormalizedExpression.__wrap(ret);
+    }
+}
+if (Symbol.dispose) Expression.prototype[Symbol.dispose] = Expression.prototype.free;
 
 export class Flow {
     static __wrap(ptr) {
@@ -1669,6 +2050,117 @@ export class Instance {
 }
 if (Symbol.dispose) Instance.prototype[Symbol.dispose] = Instance.prototype.free;
 
+/**
+ * A normalized expression with a stable hash for caching and equivalence checks.
+ */
+export class NormalizedExpression {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(NormalizedExpression.prototype);
+        obj.__wbg_ptr = ptr;
+        NormalizedExpressionFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        NormalizedExpressionFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_normalizedexpression_free(ptr, 0);
+    }
+    /**
+     * Get the stable hash value for this normalized expression as a string.
+     * @returns {string}
+     */
+    stableHash() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.normalizedexpression_stableHash(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get the string representation of this normalized expression.
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.normalizedexpression_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get the stable hash as a hex string.
+     * @returns {string}
+     */
+    stableHashHex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.normalizedexpression_stableHashHex(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get the inner expression.
+     * @returns {Expression}
+     */
+    innerExpression() {
+        const ret = wasm.normalizedexpression_innerExpression(this.__wbg_ptr);
+        return Expression.__wrap(ret);
+    }
+    /**
+     * Check equality with another normalized expression.
+     * @param {NormalizedExpression} other
+     * @returns {boolean}
+     */
+    equals(other) {
+        _assertClass(other, NormalizedExpression);
+        const ret = wasm.normalizedexpression_equals(this.__wbg_ptr, other.__wbg_ptr);
+        return ret !== 0;
+    }
+}
+if (Symbol.dispose) NormalizedExpression.prototype[Symbol.dispose] = NormalizedExpression.prototype.free;
+
+/**
+ * @enum {0 | 1 | 2}
+ */
+export const Quantifier = Object.freeze({
+    ForAll: 0, "0": "ForAll",
+    Exists: 1, "1": "Exists",
+    ExistsUnique: 2, "2": "ExistsUnique",
+});
+
 export class Resource {
     static __wrap(ptr) {
         ptr = ptr >>> 0;
@@ -1840,6 +2332,14 @@ export const Severity = Object.freeze({
     Info: 2, "2": "Info",
 });
 
+/**
+ * @enum {0 | 1}
+ */
+export const UnaryOp = Object.freeze({
+    Not: 0, "0": "Not",
+    Negate: 1, "1": "Negate",
+});
+
 export class Unit {
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
@@ -2007,6 +2507,58 @@ export class Violation {
     }
 }
 if (Symbol.dispose) Violation.prototype[Symbol.dispose] = Violation.prototype.free;
+
+export class WindowSpec {
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        WindowSpecFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_windowspec_free(ptr, 0);
+    }
+    /**
+     * @param {number} duration
+     * @param {string} unit
+     */
+    constructor(duration, unit) {
+        const ptr0 = passStringToWasm0(unit, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.windowspec_new(duration, ptr0, len0);
+        this.__wbg_ptr = ret >>> 0;
+        WindowSpecFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {number}
+     */
+    get duration() {
+        const ret = wasm.__wbg_get_windowspec_duration(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @returns {string}
+     */
+    get unit() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.__wbg_get_violation_name(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+        }
+    }
+}
+if (Symbol.dispose) WindowSpec.prototype[Symbol.dispose] = WindowSpec.prototype.free;
 
 /**
  * Check if SEA-DSL source code is already formatted.

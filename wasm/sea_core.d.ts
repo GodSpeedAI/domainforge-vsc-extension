@@ -1,6 +1,37 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export enum AggregateFunction {
+  Count = 0,
+  Sum = 1,
+  Min = 2,
+  Max = 3,
+  Avg = 4,
+}
+
+export enum BinaryOp {
+  And = 0,
+  Or = 1,
+  Equal = 2,
+  NotEqual = 3,
+  GreaterThan = 4,
+  LessThan = 5,
+  GreaterThanOrEqual = 6,
+  LessThanOrEqual = 7,
+  Plus = 8,
+  Minus = 9,
+  Multiply = 10,
+  Divide = 11,
+  Contains = 12,
+  StartsWith = 13,
+  EndsWith = 14,
+  Matches = 15,
+  HasRole = 16,
+  Before = 17,
+  After = 18,
+  During = 19,
+}
+
 export class Dimension {
   free(): void;
   [Symbol.dispose](): void;
@@ -37,6 +68,92 @@ export class EvaluationResult {
    * List of violations
    */
   readonly violations: Violation[];
+}
+
+export class Expression {
+  private constructor();
+  free(): void;
+  [Symbol.dispose](): void;
+  /**
+   * Create an aggregation expression (e.g., COUNT(items)).
+   */
+  static aggregation(_function: AggregateFunction, collection: Expression, field?: string | null, filter?: Expression | null): Expression;
+  /**
+   * Create a literal boolean expression.
+   */
+  static literalBool(value: boolean): Expression;
+  /**
+   * Check if this expression is semantically equivalent to another.
+   */
+  isEquivalent(other: Expression): boolean;
+  /**
+   * Create a member access expression (e.g., user.name).
+   */
+  static memberAccess(object: string, member: string): Expression;
+  /**
+   * Create a literal number expression.
+   */
+  static literalNumber(value: number): Expression;
+  /**
+   * Create a literal string expression.
+   */
+  static literalString(value: string): Expression;
+  /**
+   * Get the string representation of this expression.
+   */
+  toString(): string;
+  /**
+   * Create a quantifier expression (ForAll, Exists, ExistsUnique).
+   */
+  static quantifier_expr(q: Quantifier, variable: string, collection: Expression, condition: Expression): Expression;
+  /**
+   * Create an aggregation comprehension expression.
+   */
+  static aggregationComprehension(_function: AggregateFunction, variable: string, collection: Expression, predicate: Expression, projection: Expression, window?: WindowSpec | null, target_unit?: string | null): Expression;
+  /**
+   * Create a cast expression (e.g., x as "Money").
+   */
+  static cast(operand: Expression, target_type: string): Expression;
+  /**
+   * Create a time literal expression (ISO 8601 timestamp).
+   */
+  static time(timestamp: string): Expression;
+  /**
+   * Create a unary expression (e.g., NOT x).
+   */
+  static unary(op: UnaryOp, operand: Expression): Expression;
+  /**
+   * Create a binary expression (e.g., left AND right).
+   */
+  static binary(op: BinaryOp, left: Expression, right: Expression): Expression;
+  /**
+   * Check equality with another expression.
+   */
+  equals(other: Expression): boolean;
+  /**
+   * Create a literal expression from a JSON string.
+   */
+  static literal(value_json: string): Expression;
+  /**
+   * Create a group-by expression.
+   */
+  static groupBy(variable: string, collection: Expression, key: Expression, condition: Expression, filter?: Expression | null): Expression;
+  /**
+   * Create an interval literal expression.
+   */
+  static interval(start: string, end: string): Expression;
+  /**
+   * Create a quantity literal expression (e.g., "100 USD").
+   */
+  static quantity(value: string, unit: string): Expression;
+  /**
+   * Create a variable expression.
+   */
+  static variable(name: string): Expression;
+  /**
+   * Normalize this expression to canonical form.
+   */
+  normalize(): NormalizedExpression;
 }
 
 export class Flow {
@@ -134,6 +251,38 @@ export class Instance {
   readonly namespace: string | undefined;
 }
 
+export class NormalizedExpression {
+  private constructor();
+  free(): void;
+  [Symbol.dispose](): void;
+  /**
+   * Get the stable hash value for this normalized expression as a string.
+   */
+  stableHash(): string;
+  /**
+   * Get the string representation of this normalized expression.
+   */
+  toString(): string;
+  /**
+   * Get the stable hash as a hex string.
+   */
+  stableHashHex(): string;
+  /**
+   * Get the inner expression.
+   */
+  innerExpression(): Expression;
+  /**
+   * Check equality with another normalized expression.
+   */
+  equals(other: NormalizedExpression): boolean;
+}
+
+export enum Quantifier {
+  ForAll = 0,
+  Exists = 1,
+  ExistsUnique = 2,
+}
+
 export class Resource {
   free(): void;
   [Symbol.dispose](): void;
@@ -156,6 +305,11 @@ export enum Severity {
   Info = 2,
 }
 
+export enum UnaryOp {
+  Not = 0,
+  Negate = 1,
+}
+
 export class Unit {
   free(): void;
   [Symbol.dispose](): void;
@@ -173,6 +327,14 @@ export class Violation {
   readonly name: string;
   readonly message: string;
   readonly severity: Severity;
+}
+
+export class WindowSpec {
+  free(): void;
+  [Symbol.dispose](): void;
+  constructor(duration: number, unit: string);
+  readonly duration: number;
+  readonly unit: string;
 }
 
 /**
@@ -222,6 +384,7 @@ export interface InitOutput {
   readonly __wbg_dimension_free: (a: number, b: number) => void;
   readonly __wbg_entity_free: (a: number, b: number) => void;
   readonly __wbg_evaluationresult_free: (a: number, b: number) => void;
+  readonly __wbg_expression_free: (a: number, b: number) => void;
   readonly __wbg_flow_free: (a: number, b: number) => void;
   readonly __wbg_get_evaluationresult_isSatisfied: (a: number) => number;
   readonly __wbg_get_evaluationresult_isSatisfiedTristate: (a: number) => number;
@@ -229,11 +392,14 @@ export interface InitOutput {
   readonly __wbg_get_violation_message: (a: number, b: number) => void;
   readonly __wbg_get_violation_name: (a: number, b: number) => void;
   readonly __wbg_get_violation_severity: (a: number) => number;
+  readonly __wbg_get_windowspec_duration: (a: number) => number;
   readonly __wbg_graph_free: (a: number, b: number) => void;
   readonly __wbg_instance_free: (a: number, b: number) => void;
+  readonly __wbg_normalizedexpression_free: (a: number, b: number) => void;
   readonly __wbg_resource_free: (a: number, b: number) => void;
   readonly __wbg_unit_free: (a: number, b: number) => void;
   readonly __wbg_violation_free: (a: number, b: number) => void;
+  readonly __wbg_windowspec_free: (a: number, b: number) => void;
   readonly checkFormat: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly dimension_new: (a: number, b: number) => number;
   readonly dimension_toString: (a: number, b: number) => void;
@@ -244,6 +410,26 @@ export interface InitOutput {
   readonly entity_new: (a: number, b: number, c: number, d: number) => number;
   readonly entity_setAttribute: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly entity_toJSON: (a: number, b: number) => void;
+  readonly expression_aggregation: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly expression_aggregationComprehension: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly expression_binary: (a: number, b: number, c: number) => number;
+  readonly expression_cast: (a: number, b: number, c: number) => number;
+  readonly expression_equals: (a: number, b: number) => number;
+  readonly expression_groupBy: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly expression_interval: (a: number, b: number, c: number, d: number) => number;
+  readonly expression_isEquivalent: (a: number, b: number) => number;
+  readonly expression_literal: (a: number, b: number, c: number) => void;
+  readonly expression_literalBool: (a: number) => number;
+  readonly expression_literalNumber: (a: number, b: number) => void;
+  readonly expression_literalString: (a: number, b: number) => number;
+  readonly expression_memberAccess: (a: number, b: number, c: number, d: number) => number;
+  readonly expression_normalize: (a: number) => number;
+  readonly expression_quantifier_expr: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly expression_quantity: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly expression_time: (a: number, b: number) => number;
+  readonly expression_toString: (a: number, b: number) => void;
+  readonly expression_unary: (a: number, b: number) => number;
+  readonly expression_variable: (a: number, b: number) => number;
   readonly flow_fromId: (a: number, b: number) => void;
   readonly flow_getAttribute: (a: number, b: number, c: number) => number;
   readonly flow_id: (a: number, b: number) => void;
@@ -306,6 +492,11 @@ export interface InitOutput {
   readonly instance_new: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly instance_setField: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly instance_toJSON: (a: number, b: number) => void;
+  readonly normalizedexpression_equals: (a: number, b: number) => number;
+  readonly normalizedexpression_innerExpression: (a: number) => number;
+  readonly normalizedexpression_stableHash: (a: number, b: number) => void;
+  readonly normalizedexpression_stableHashHex: (a: number, b: number) => void;
+  readonly normalizedexpression_toString: (a: number, b: number) => void;
   readonly resource_getAttribute: (a: number, b: number, c: number) => number;
   readonly resource_id: (a: number, b: number) => void;
   readonly resource_name: (a: number, b: number) => void;
@@ -319,6 +510,8 @@ export interface InitOutput {
   readonly unit_name: (a: number, b: number) => void;
   readonly unit_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
   readonly unit_symbol: (a: number, b: number) => void;
+  readonly windowspec_new: (a: number, b: number, c: number) => number;
+  readonly __wbg_get_windowspec_unit: (a: number, b: number) => void;
   readonly __wbindgen_export: (a: number, b: number) => number;
   readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export3: (a: number) => void;
