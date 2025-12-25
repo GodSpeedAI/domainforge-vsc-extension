@@ -15,6 +15,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changed
 
 - **Release Workflow**: Updated GitHub Actions release workflow to use `HaaLeo/publish-vscode-extension@v2` action for dual marketplace publishing
+- **LSP Versioning**: Release workflow now uses the latest LSP release instead of requiring version-matched releases, allowing independent versioning
 - **Documentation**: Updated RELEASE.md with instructions for both marketplace tokens
 
 ## [0.0.2] - 2025-12-24
