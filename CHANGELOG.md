@@ -6,6 +6,17 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.0] - 2025-12-25
+
+### Added
+
+- **Open VSX Registry Support**: Extension is now published to both VS Code Marketplace and [Open VSX Registry](https://open-vsx.org/), enabling installation on VS Code forks (VSCodium, code-server, Gitpod, etc.)
+
+### Changed
+
+- **Release Workflow**: Updated GitHub Actions release workflow to use `HaaLeo/publish-vscode-extension@v2` action for dual marketplace publishing
+- **Documentation**: Updated RELEASE.md with instructions for both marketplace tokens
+
 ## [0.0.2] - 2025-12-24
 
 ### Changed

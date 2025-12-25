@@ -2,7 +2,7 @@
   "name": "domainforge",
   "displayName": "DomainForge",
   "description": "Language support for the DomainForge SEA DSL - syntax highlighting, linting, and formatting",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "publisher": "GodSpeedAI",
   "repository": {
     "type": "git",
