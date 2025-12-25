@@ -142,36 +142,28 @@ jobs:
     # Only publish if marketplace publishing is enabled
     if: ${{ vars.MARKETPLACE_PUBLISH_ENABLED == 'true' }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Download VSIX
         uses: actions/download-artifact@v4
         with:
           name: domainforge-vsix
           path: ./
 
+      - name: Get VSIX path
+        id: vsix
+        run: echo "path=$(ls *.vsix | head -1)" >> $GITHUB_OUTPUT
+
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@v2
         id: publishToOpenVSX
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
+          extensionFile: ${{ steps.vsix.outputs.path }}
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VSCE_PAT }}
           registryUrl: https://marketplace.visualstudio.com
-          extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
+          extensionFile: ${{ steps.vsix.outputs.path }}
+
+
