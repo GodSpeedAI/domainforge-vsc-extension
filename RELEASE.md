@@ -94,5 +94,6 @@ npx ovsx publish domainforge-X.Y.Z.vsix -p $OPEN_VSX_TOKEN
 
 ## LSP Server Releases
 
-The extension downloads LSP binaries from the corresponding `domainforge-lsp` release.
-Ensure the `domainforge-lsp` repo is tagged with the same version. The extension release workflow includes a retry loop (15 mins) to wait for the LSP release artifacts to become available, so simultaneous tag pushes to both repos are supported.
+The extension release workflow automatically downloads LSP binaries from the **latest** `domainforge-lsp` release. This decouples versioning between the extension and LSP server, allowing independent release cycles.
+
+> **Note**: If you need to bundle a specific LSP version, you can manually download the binaries and include them in the `bin/` directory before packaging.
