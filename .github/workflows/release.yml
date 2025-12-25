@@ -142,11 +142,11 @@ jobs:
           generate_release_notes: true
 
   publish:
-    name: Publish to VS Code Marketplace
+    name: Publish to Marketplaces
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Only publish if VSCE_PAT secret is configured
+    # Only publish if marketplace publishing is enabled
     if: ${{ vars.MARKETPLACE_PUBLISH_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -170,7 +170,15 @@ jobs:
           name: domainforge-vsix
           path: ./
 
-      - name: Publish to VS Code Marketplace
-        run: pnpm dlx @vscode/vsce publish --packagePath *.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v2
+        id: publishToOpenVSX
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          pat: ${{ secrets.VSCE_PAT }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}

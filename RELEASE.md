@@ -71,20 +71,28 @@ Versions should be synchronized across:
 
 ### Setup
 
-1. Create an Azure DevOps Personal Access Token (PAT) with `Marketplace > Manage` scope
-2. Add `VSCE_PAT` as a repository secret in GitHub
-3. Set repository variable `MARKETPLACE_PUBLISH_ENABLED` to `true`
+1. **VS Code Marketplace**: Create an Azure DevOps Personal Access Token (PAT) with `Marketplace > Manage` scope
+2. **Open VSX Registry**: Create a Personal Access Token at [open-vsx.org](https://open-vsx.org/user-settings/tokens)
+3. Add the following repository secrets in GitHub:
+   - `VSCE_PAT` - Azure DevOps PAT for VS Code Marketplace
+   - `OPEN_VSX_TOKEN` - Personal Access Token for Open VSX Registry
+4. Set repository variable `MARKETPLACE_PUBLISH_ENABLED` to `true`
+
+> **Note**: The release workflow first publishes to Open VSX Registry, then reuses the generated VSIX to publish to VS Code Marketplace, ensuring identical artifacts across both registries.
 
 ### Manual Publishing
 
 If automated publishing fails:
 
 ```bash
+# VS Code Marketplace
 npx vsce publish --packagePath domainforge-X.Y.Z.vsix
+
+# Open VSX Registry
+npx ovsx publish domainforge-X.Y.Z.vsix -p $OPEN_VSX_TOKEN
 ```
 
 ## LSP Server Releases
 
-The extension downloads LSP binaries from the corresponding `domainforge-lsp` release.
 The extension downloads LSP binaries from the corresponding `domainforge-lsp` release.
 Ensure the `domainforge-lsp` repo is tagged with the same version. The extension release workflow includes a retry loop (15 mins) to wait for the LSP release artifacts to become available, so simultaneous tag pushes to both repos are supported.
