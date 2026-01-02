@@ -17645,8 +17645,8 @@ var require_main4 = __commonJS({
         }
       }
       createMessageTransports(encoding) {
-        function getEnvironment(env, fork) {
-          if (!env && !fork) {
+        function getEnvironment(env2, fork) {
+          if (!env2 && !fork) {
             return void 0;
           }
           const result = /* @__PURE__ */ Object.create(null);
@@ -17655,8 +17655,8 @@ var require_main4 = __commonJS({
             result["ELECTRON_RUN_AS_NODE"] = "1";
             result["ELECTRON_NO_ASAR"] = "1";
           }
-          if (env) {
-            Object.keys(env).forEach((key) => result[key] = env[key]);
+          if (env2) {
+            Object.keys(env2).forEach((key) => result[key] = env2[key]);
           }
           return result;
         }
@@ -18212,26 +18212,26 @@ var McpServerManager = class {
     if (workspacePaths.length > 0) {
       args.push("--workspace-root", workspacePaths[0]);
     }
-    const env = {
+    const env2 = {
       ...process.env,
       // Set Rust log level
       RUST_LOG: vscode.workspace.getConfiguration("domainforge").get("trace.server") === "verbose" ? "debug" : "info"
     };
-    env["MCP_RATE_LIMIT_DIAGNOSTICS"] = mcpConfig.rateLimits.diagnostics.toString();
-    env["MCP_RATE_LIMIT_HOVER"] = mcpConfig.rateLimits.hover.toString();
-    env["MCP_RATE_LIMIT_DEFINITION"] = mcpConfig.rateLimits.definition.toString();
-    env["MCP_RATE_LIMIT_REFERENCES"] = mcpConfig.rateLimits.references.toString();
-    env["MCP_RATE_LIMIT_RENAME_PREVIEW"] = mcpConfig.rateLimits.renamePreview.toString();
-    env["MCP_RATE_LIMIT_CODE_ACTIONS"] = mcpConfig.rateLimits.codeActions.toString();
+    env2["MCP_RATE_LIMIT_DIAGNOSTICS"] = mcpConfig.rateLimits.diagnostics.toString();
+    env2["MCP_RATE_LIMIT_HOVER"] = mcpConfig.rateLimits.hover.toString();
+    env2["MCP_RATE_LIMIT_DEFINITION"] = mcpConfig.rateLimits.definition.toString();
+    env2["MCP_RATE_LIMIT_REFERENCES"] = mcpConfig.rateLimits.references.toString();
+    env2["MCP_RATE_LIMIT_RENAME_PREVIEW"] = mcpConfig.rateLimits.renamePreview.toString();
+    env2["MCP_RATE_LIMIT_CODE_ACTIONS"] = mcpConfig.rateLimits.codeActions.toString();
     if (mcpConfig.auditLogPath) {
-      env["MCP_AUDIT_LOG_PATH"] = mcpConfig.auditLogPath;
+      env2["MCP_AUDIT_LOG_PATH"] = mcpConfig.auditLogPath;
     }
     this.outputChannel.appendLine(`Starting MCP server: ${mcpPath}`);
     this.outputChannel.appendLine(`Arguments: ${args.join(" ")}`);
     this.outputChannel.appendLine(`Workspace paths: ${workspacePaths.join(", ")}`);
     try {
       this.process = (0, import_child_process.spawn)(mcpPath, args, {
-        env,
+        env: env2,
         stdio: ["pipe", "pipe", "pipe"]
       });
       this.process.stdout?.on("data", (data) => {
@@ -18514,6 +18514,69 @@ async function activate(context) {
     }
   );
   context.subscriptions.push(showMcpLogsCommand);
+  const showAstJsonCommand = vscode2.commands.registerCommand(
+    "domainforge.showAstJson",
+    async () => {
+      const editor = vscode2.window.activeTextEditor;
+      if (!editor || editor.document.languageId !== "domainforge") {
+        vscode2.window.showWarningMessage("Open a .sea file first");
+        return;
+      }
+      if (!client || !client.isRunning()) {
+        vscode2.window.showErrorMessage("Language Server is not running");
+        return;
+      }
+      try {
+        const response = await client.sendRequest("sea/astJson", {
+          uri: editor.document.uri.toString(),
+          pretty: true
+        });
+        if (!response.success) {
+          vscode2.window.showErrorMessage(`AST generation failed: ${response.error}`);
+          return;
+        }
+        const doc = await vscode2.workspace.openTextDocument({
+          content: response.astJson,
+          language: "json"
+        });
+        await vscode2.window.showTextDocument(doc, { preview: true });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        vscode2.window.showErrorMessage(`Failed to get AST JSON: ${message}`);
+      }
+    }
+  );
+  context.subscriptions.push(showAstJsonCommand);
+  const copyAstJsonCommand = vscode2.commands.registerCommand(
+    "domainforge.copyAstJson",
+    async () => {
+      const editor = vscode2.window.activeTextEditor;
+      if (!editor || editor.document.languageId !== "domainforge") {
+        vscode2.window.showWarningMessage("Open a .sea file first");
+        return;
+      }
+      if (!client || !client.isRunning()) {
+        vscode2.window.showErrorMessage("Language Server is not running");
+        return;
+      }
+      try {
+        const response = await client.sendRequest("sea/astJson", {
+          uri: editor.document.uri.toString(),
+          pretty: true
+        });
+        if (!response.success) {
+          vscode2.window.showErrorMessage(`AST generation failed: ${response.error}`);
+          return;
+        }
+        await vscode2.env.clipboard.writeText(response.astJson);
+        vscode2.window.showInformationMessage("AST JSON copied to clipboard");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        vscode2.window.showErrorMessage(`Failed to get AST JSON: ${message}`);
+      }
+    }
+  );
+  context.subscriptions.push(copyAstJsonCommand);
   const configWatcher = vscode2.workspace.onDidChangeConfiguration(async (event) => {
     if (event.affectsConfiguration("domainforge.server.path")) {
       vscode2.window.showInformationMessage(
