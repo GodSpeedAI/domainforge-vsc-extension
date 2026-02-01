@@ -46,6 +46,125 @@ The MCP server enables AI agents (like VS Code Copilot, Claude, etc.) to query D
 | `domainforge.mcp.rateLimits.codeActions`   | `number`  | `5`     | Max requests/second for code actions tool           |
 | `domainforge.mcp.auditLog.path`            | `string`  | `""`    | Path to MCP audit log file (empty = disabled)       |
 
+---
+
+## MCP Server Setup for AI Coding Agents
+
+The DomainForge MCP server allows AI coding agents (Claude Code, Copilot, etc.) to directly query language features like hover information, go-to-definition, references, and diagnostics for your `.sea` files.
+
+### Quick Setup with Your AI Agent
+
+Copy and paste this prompt to your AI coding agent to automatically configure the MCP server:
+
+```text
+Set up the DomainForge MCP server for this project. Find the domainforge-mcp binary in my VSCode extensions directory and configure it in my MCP client config. The binary requires --lsp-path and --workspace-root arguments.
+```
+
+### Manual Setup
+
+#### Step 1: Locate the Binaries
+
+The MCP and LSP binaries are bundled with the extension:
+
+```bash
+# Find the extension directory
+ls ~/.vscode-server/extensions/godspeedai.domainforge-*/bin/
+
+# Or on Windows
+ls %USERPROFILE%\.vscode\extensions\godspeedai.domainforge-*\bin\
+```
+
+#### Step 2: Configure Your MCP Client
+
+Add the DomainForge MCP server to your MCP configuration file:
+
+**For Claude Desktop** (`~/.config/Claude/claude_desktop_config.json` or `%APPDATA%\Claude\claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "domainforge": {
+      "command": "/path/to/domainforge-mcp",
+      "args": [
+        "--lsp-path", "/path/to/domainforge-lsp",
+        "--workspace-root", "/path/to/your/project"
+      ]
+    }
+  }
+}
+```
+
+**For Claude Code** (`~/.claude/.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "domainforge": {
+      "command": "/path/to/domainforge-mcp",
+      "args": [
+        "--lsp-path", "/path/to/domainforge-lsp",
+        "--workspace-root", "/path/to/your/project"
+      ]
+    }
+  }
+}
+```
+
+**Windows Example:**
+
+```json
+{
+  "mcpServers": {
+    "domainforge": {
+      "command": "C:\\Users\\YourName\\.vscode-server\\extensions\\godspeedai.domainforge-0.1.0\\bin\\windows-x64\\domainforge-mcp.exe",
+      "args": [
+        "--lsp-path", "C:\\Users\\YourName\\.vscode-server\\extensions\\godspeedai.domainforge-0.1.0\\bin\\windows-x64\\domainforge-lsp.exe",
+        "--workspace-root", "C:\\Users\\YourName\\Projects\\my-sea-project"
+      ]
+    }
+  }
+}
+```
+
+#### Step 3: Restart Your MCP Client
+
+After adding the configuration, restart your AI coding agent or reload its configuration.
+
+### Available MCP Tools
+
+Once configured, the following tools are available to your AI agent:
+
+| Tool | Description |
+| :--- | :--- |
+| `domainforge/hover` | Get hover information for a symbol at a position |
+| `domainforge/definition` | Get definition location for a symbol |
+| `domainforge/references` | Find all references to a symbol |
+| `domainforge/diagnostics` | Get cached diagnostics for a file |
+| `domainforge/rename-preview` | Preview a rename operation |
+| `domainforge/code-actions` | Get available code actions for a range |
+
+### Project-Specific vs Global Setup
+
+**Project-Specific** (Recommended):
+
+- Set `--workspace-root` to your project directory
+- AI agent only has access to files within your project
+- Better security and isolation
+
+**Global Setup:**
+
+- Set `--workspace-root` to a parent directory containing multiple projects
+- Useful for monorepos or working with multiple SEA projects
+- Ensure all directories are trusted
+
+### Example Usage with AI Agent
+
+Once configured, you can ask your AI agent:
+
+> "Analyze the hover information for the 'Warehouse' entity in my SEA file"
+> "Find all references to the 'Money' resource"
+> "Show diagnostics for the current file"
+
 ## Commands
 
 | Command                                | Description                         |
