@@ -34,3 +34,7 @@ Thumbs.db
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/settings.json
+
+
+# Agent files
+.omc/
