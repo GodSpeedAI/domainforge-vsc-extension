@@ -24,6 +24,20 @@ let client: LanguageClient | undefined;
 let mcpServerManager: McpServerManager | undefined;
 
 /**
+ * Response from the sea/astJson custom LSP request.
+ */
+interface AstJsonResponse {
+	/** The AST JSON string */
+	astJson: string;
+	/** Document version at time of AST generation */
+	version: number;
+	/** Whether the document parsed successfully */
+	success: boolean;
+	/** Error message if parsing failed */
+	error?: string;
+}
+
+/**
  * Detect the current platform and return the appropriate binary path relative to the extension folder.
  */
 function getBundledBinaryPath(context: vscode.ExtensionContext): string | null {
@@ -250,6 +264,82 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		}
 	);
 	context.subscriptions.push(showMcpLogsCommand);
+
+	// Register Show AST JSON command
+	const showAstJsonCommand = vscode.commands.registerCommand(
+		'domainforge.showAstJson',
+		async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor || editor.document.languageId !== 'domainforge') {
+				vscode.window.showWarningMessage('Open a .sea file first');
+				return;
+			}
+
+			if (!client || !client.isRunning()) {
+				vscode.window.showErrorMessage('Language Server is not running');
+				return;
+			}
+
+			try {
+				const response = await client.sendRequest<AstJsonResponse>('sea/astJson', {
+					uri: editor.document.uri.toString(),
+					pretty: true
+				});
+
+				if (!response.success) {
+					vscode.window.showErrorMessage(`AST generation failed: ${response.error}`);
+					return;
+				}
+
+				// Open in a new untitled document
+				const doc = await vscode.workspace.openTextDocument({
+					content: response.astJson,
+					language: 'json'
+				});
+				await vscode.window.showTextDocument(doc, { preview: true });
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				vscode.window.showErrorMessage(`Failed to get AST JSON: ${message}`);
+			}
+		}
+	);
+	context.subscriptions.push(showAstJsonCommand);
+
+	// Register Copy AST JSON command
+	const copyAstJsonCommand = vscode.commands.registerCommand(
+		'domainforge.copyAstJson',
+		async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor || editor.document.languageId !== 'domainforge') {
+				vscode.window.showWarningMessage('Open a .sea file first');
+				return;
+			}
+
+			if (!client || !client.isRunning()) {
+				vscode.window.showErrorMessage('Language Server is not running');
+				return;
+			}
+
+			try {
+				const response = await client.sendRequest<AstJsonResponse>('sea/astJson', {
+					uri: editor.document.uri.toString(),
+					pretty: true
+				});
+
+				if (!response.success) {
+					vscode.window.showErrorMessage(`AST generation failed: ${response.error}`);
+					return;
+				}
+
+				await vscode.env.clipboard.writeText(response.astJson);
+				vscode.window.showInformationMessage('AST JSON copied to clipboard');
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				vscode.window.showErrorMessage(`Failed to get AST JSON: ${message}`);
+			}
+		}
+	);
+	context.subscriptions.push(copyAstJsonCommand);
 
 	// Watch for configuration changes
 	const configWatcher = vscode.workspace.onDidChangeConfiguration(async (event) => {

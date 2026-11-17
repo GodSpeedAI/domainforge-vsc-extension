@@ -170,6 +170,16 @@
       {
         "command": "domainforge.showMcpLogs",
         "title": "DomainForge: Show MCP Server Logs"
+      },
+      {
+        "command": "domainforge.showAstJson",
+        "title": "DomainForge: Show AST JSON",
+        "enablement": "editorLangId == domainforge"
+      },
+      {
+        "command": "domainforge.copyAstJson",
+        "title": "DomainForge: Copy AST JSON to Clipboard",
+        "enablement": "editorLangId == domainforge"
       }
     ]
   },
