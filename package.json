@@ -201,7 +201,7 @@
     "copy-wasm": "cp ../domainforge/pkg/sea_core.js ../domainforge/pkg/sea_core.d.ts ../domainforge/pkg/sea_core_bg.wasm wasm/"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1",
+    "vscode-languageclient": "^11.0.0",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
   },
